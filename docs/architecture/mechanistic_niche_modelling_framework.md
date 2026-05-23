@@ -12,12 +12,10 @@ NicheMapper.jl              ← meta re-export: installs full ecosystem; also de
 PlantMapper.jl  AnimalMapper.jl  ← MicrobeMapper.jl (deferred)
     ↑           ↑
 MicroclimateMapper.jl       ← physical environment: forcing data, terrain, microclimate
-                               (colleague-owned; MicroResult <: AbstractForcing)
+                               (MicroResult <: AbstractForcing), lateral physics (e.g. cold air drainage, water drainage)
 ```
 
-**Spatial/grid layer** (raster domain, terrain processing, lateral physics, cold air drainage,
-hydrology) is handled by the colleague as part of or alongside MicroclimateMapper.jl — name
-and package boundaries TBD. Not in scope for this plan.
+**Grid processing** technical only, no science (chunking, warm-starts, windowing). To be developed by Raf Schouten, name and package boundaries TBD. Not in scope for this plan.
 
 **Installing NicheMapper** pulls the full ecosystem. Installing only PlantMapper gives
 microclimate + plant simulation without animal deps. Installing only MicroclimateMapper gives
@@ -25,10 +23,10 @@ just the physical environment layer.
 
 **Goals:**
 - Simulate organism niches (plants, animals, microbes) with full biophysical feedbacks
-- Cover both point and gridded use-cases (grid layer via colleague's package)
-- Encourage community contributions — open interfaces, DEB is the first implementation not the only one
+- Cover both point and gridded use-cases (grid layer via grid processing package)
+- Encourage community contributions — open interfaces
 
-**Existing code to migrate into MicroclimateMapper.jl** (porting from c:/git/BiophysicalGrids.jl, colleague-led):
+**Existing code to migrate into MicroclimateMapper.jl** (porting from c:/git/BiophysicalGrids.jl, led by Raf):
 | Old file | Destination | Action |
 |---|---|---|
 | `src/WeatherDataSources/TerraClimate.jl` | MicroclimateMapper `ForcingData/TerraClimate.jl` | Port |
@@ -150,7 +148,7 @@ module NicheMapper
   @reexport using MicroclimateMapper
   @reexport using PlantMapper
   @reexport using AnimalMapper
-  # spatial/grid package re-exported once colleague's package is named and registered
+  # spatial/grid package re-exported once grid package is named and registered
 end
 ```
 
@@ -542,7 +540,7 @@ model-specific (ectotherm lizard has different stages than amphibian with aquati
 Stage tables are stored as `Vector` of named structs (one per lifecycle stage in order).
 Field names must align with BiophysicalBehaviour.jl terminology (e.g. CT_min/CT_max,
 T_F_min/T_F_max, T_B_min, T_pref — exact names to be confirmed during NicheMapper.jl
-co-design with MicroclimateMapper colleague):
+co-design with MicroclimateMapper):
 ```julia
 # each stage has a subset of LifeHistoryParameters + BehaviouralLimits overrides
 thermal_stages::Vector{ThermalLimitsPerStage}    # CT_min, CT_max, T_F_min, T_F_max, T_B_min, T_pref
@@ -1304,14 +1302,14 @@ end
 ```
 
 **After creating the stub:** push to GitHub under `github.com/BiophysicalEcology/NicheMapper.jl`
-so the colleague can comment, open Issues, and suggest edits via PRs.
+so we can collaboratively comment, open Issues, and suggest edits via PRs.
 
 ---
 
 ## Build order
 
 1. **NicheMapper.jl** — `AbstractForcing` + accessors + `AbstractSimulationEngine` contract;
-   co-design accessor signatures with MicroclimateMapper colleague.
+   co-design accessor signatures with MicroclimateMapper.
 2. **AnimalMapper.jl** — most direct port; `simulate_organism()` formalises the
    BiophysicalGrids ectotherm loop with digestive water budget added.
 3. **PlantMapper.jl** — `WaterLimitedVegetation` first (validates plantgro.R port, no
