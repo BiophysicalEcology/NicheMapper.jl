@@ -1388,7 +1388,7 @@ Items identified during this planning that belong in packages outside the *Mappe
 **PlantSimEngine.jl / PlantGraphs.jl / SkyDomes.jl (VirtualPlantLab — c:/git/):**
 - These are weakdeps for future extensions (FSPM structure, 3D radiation); no action needed for skeleton build
 
-**MicroclimateMapper.jl (colleague):**
+**MicroclimateMapper.jl:**
 - Co-design `AbstractForcing` accessor signatures (NicheMapper.jl Layer A) — especially `soil_water_potential(forcing, step, depth_node)` return units and node indexing convention
 - Implement `canopy_integrated_temperature()` and `root_zone_integrated_water_potential()` helpers, or confirm PlantMapper should wrap the node accessors directly
 - Confirm `AbstractPlantModel` interface (transpiration!, canopy_albedo, canopy_lai, root_density_profile) stays in MicroclimateMapper
