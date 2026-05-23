@@ -785,28 +785,43 @@ struct JuvenilePlantStage <: AbstractPlantLifeStage end; struct AdultPlantStage 
 #   Embryo(Seed) → Birth(Germination) → Juvenile(Seedling) → Puberty(Reproduction) → Adult → Ultimate
 ```
 
-### VirtualPlantLab integration
+### External leaf physiology packages (c:/git/)
 
-Four packages are available at c:/git/ from the VirtualPlantLab ecosystem:
+Six packages from two independent ecosystems are available locally:
 
-| Package | Relevant content | Integration strategy |
-|---|---|---|
-| **Ecophys.jl** | FvCB C3/C4 photosynthesis, Ball-Berry stomata, leaf energy balance, Unitful versions | **Primary leaf physiology dep** — bridge via `EcophysExt.jl` wrapping Ecophys models into `AbstractPhotosynthesisModel` / `AbstractStomatalModel` interfaces |
-| **PlantSimEngine.jl** | Modular process framework, Multi-Scale Tree Graph (MTG) for plant architecture | Weakdep for future FSPM extensions; MTG can represent canopy layers and root distribution |
-| **PlantGraphs.jl** | L-systems / graph rewriting for dynamic structural plant models | Weakdep for future full structural plant models (beyond current scope) |
-| **SkyDomes.jl** | Sky dome discretization, clear/cloudy sky models, PAR/NIR waveband conversion | Weakdep alongside SolarRadiation.jl for 3D canopy radiation interception |
+| Package | Ecosystem | Relevant content | Integration strategy |
+|---|---|---|---|
+| **PlantBiophysics.jl** | Rémi Vezy | FvCB (`Fvcb`), **Medlyn** stomata, Monteith energy balance (iterative Tleaf), boundary layer conductance | **Primary leaf physiology bridge** via `PlantBiophysicsExt.jl` |
+| **PlantMeteo.jl** | Rémi Vezy | `Atmosphere` struct (T, Wind, Rh, VPD, Cₐ, radiation) consumed by PlantBiophysics | Bridge: convert `AbstractForcing` → `Atmosphere` at each timestep |
+| **PlantSimEngine.jl** | Rémi Vezy | Modular process framework; MTG for plant architecture | Weakdep for future FSPM extensions |
+| **Ecophys.jl** | VirtualPlantLab | FvCB C3/C4 photosynthesis, Ball-Berry stomata, energy balance, **Unitful versions** | Secondary — preferred when Unitful-native outputs or C4 needed |
+| **PlantGraphs.jl** | VirtualPlantLab | L-systems / graph rewriting for dynamic structural plant models | Weakdep for future structural plant models |
+| **SkyDomes.jl** | VirtualPlantLab | Sky dome discretization, clear/cloudy sky models, PAR/NIR waveband conversion | Weakdep for 3D canopy radiation interception |
 
-**Ecophys.jl note:** `C3()` / `C3Q()` implement the full Yin & Struik FvCB framework with
-Arrhenius and peaked temperature responses. `solve_energy_balance()` couples photosynthesis
-with leaf temperature — this partially overlaps with the FixedPointSolver plan. The
-`EcophysExt.jl` bridge should wrap Ecophys models to implement PlantMapper's abstract
-interfaces, so users who load Ecophys get the full FvCB model, and those who don't get
-the simple built-ins below.
+**PlantBiophysics.jl is the primary bridge (not Ecophys.jl).** Reasons:
+- Already has `Medlyn` stomatal conductance and `Fvcb` (C3 FvCB)
+- `Monteith` energy balance already does iterative Tleaf↔gs coupling — replaces the `FixedPointSolver` in the ext
+- Composable via PlantSimEngine: photosynthesis, stomata, and energy balance chain automatically
+- **No Unitful support** — units are stripped at the NicheMapper→PlantBiophysics boundary:
+  ```julia
+  # In PlantBiophysicsExt.jl — AbstractForcing → PlantMeteo.Atmosphere
+  function make_atmosphere(forcing::AbstractForcing, step, height_node)
+      PlantMeteo.Atmosphere(
+          T    = ustrip(u"°C", air_temperature(forcing, step, height_node)),
+          Wind = ustrip(u"m/s", wind_speed(forcing, step, height_node)),
+          Rh   = relative_humidity(forcing, step, height_node),
+          Cₐ   = 400.0,
+          Ri_PAR_f = ustrip(u"W/m^2", photosynthetically_active_radiation(forcing, step)),
+      )
+  end
+  # Outputs from PlantBiophysics re-attach units before storing in PlantResult
+  ```
+- Ecophys.jl is the secondary weakdep for Unitful-native outputs or C4 photosynthesis (PlantBiophysics is C3 only)
 
-### Built-in implementations (used when Ecophys.jl not loaded)
+### Built-in implementations (used when PlantBiophysics.jl not loaded)
 
 **`FarquharBerryPhotosynthesis <: AbstractPhotosynthesisModel`**
-Simplified FvCB for use without Ecophys.jl — Rubisco-limited (`A_c`) and
+Simplified FvCB for use without PlantBiophysics.jl — Rubisco-limited (`A_c`) and
 electron-transport-limited (`A_j`) rates; temperature correction via ThermalPhysiology.jl:
 
 ```julia
@@ -828,11 +843,12 @@ Temperature correction via `ThermalPhysiology.q10(model, leaf_temperature)`.
 
 **`BallBerryStomatalConductance <: AbstractStomatalModel`**
 `g_s = minimum_conductance + slope_coefficient × (A_net × relative_humidity / ambient_co2)`
-(Ecophys.jl provides the full parameterisation; this is the lightweight built-in version.)
+(Lightweight built-in; PlantBiophysics.jl provides the fully coupled version via `PlantBiophysicsExt.jl`.)
 
 **`MedlynStomatalConductance <: AbstractStomatalModel`**
 `g_s = minimum_conductance + (1 + marginal_water_cost_coefficient / √vpd) × (A_net / ambient_co2)`
-Optimal stomatal theory (Medlyn et al. 2011); `vpd` in `u"kPa"`. Not in Ecophys.jl — PlantMapper owns this.
+Optimal stomatal theory (Medlyn et al. 2011); `vpd` in `u"kPa"`. PlantMapper owns the built-in Unitful
+version; `PlantBiophysicsExt.jl` wraps `PlantBiophysics.Medlyn` when PlantBiophysics is loaded.
 
 **`ProportionalRootWaterUptake <: AbstractRootWaterUptakeModel`**
 Uptake at each node ∝ `root_density_profile[node] × (soil_water_potential[node] - leaf_water_potential)`.
@@ -977,12 +993,12 @@ src/
     par_from_spectrum.jl             # photosynthetically_active_radiation(solar_result)
                                      # photosynthetically_active_radiation(forcing, step; par_fraction)
   Photosynthesis/
-    farquhar_berry.jl                # FarquharBerryPhotosynthesis (built-in; Ecophys.jl preferred)
+    farquhar_berry.jl                # FarquharBerryPhotosynthesis (built-in; PlantBiophysics preferred)
     rectangular_hyperbola.jl         # RectangularHyperbolePhotosynthesis
   Stomata/
-    ball_berry.jl                    # BallBerryStomatalConductance (built-in; Ecophys.jl preferred)
-    medlyn.jl                        # MedlynStomatalConductance (PlantMapper-owned; not in Ecophys.jl)
-    fixed_point_solver.jl            # FixedPointSolver + stomatal coupling iteration
+    ball_berry.jl                    # BallBerryStomatalConductance (built-in; PlantBiophysics preferred)
+    medlyn.jl                        # MedlynStomatalConductance (Unitful built-in; PlantBiophysics.Medlyn in ext)
+    fixed_point_solver.jl            # FixedPointSolver + stomatal coupling (built-in; Monteith replaces in ext)
   Roots/
     proportional_uptake.jl           # ProportionalRootWaterUptake
   Growth/
@@ -1008,15 +1024,20 @@ ext/
                                      #     Seedling(Juvenile) → Reproduction(Puberty) → Adult → Ultimate
     deb_plant_result.jl              # Extends PlantResult with DEBState (V_S, C_S, N_S, V_R, C_R, N_R)
                                      #   + current lifecycle stage at each timestep
-  EcophysExt.jl                      # activated when `using PlantMapper, Ecophys`
-    ecophys_photosynthesis.jl        # EcophysC3Photosynthesis <: AbstractPhotosynthesisModel
-                                     #   wraps Ecophys.jl C3Q() model (Unitful version)
-                                     #   passes PAR, Tleaf, CO2 → returns A_net in u"μmol/m^2/s"
-    ecophys_stomata.jl               # EcophysBallBerry <: AbstractStomatalModel
-                                     #   wraps Ecophys.jl Ball-Berry stomata (embedded in C3Q)
-    ecophys_energy_balance.jl        # Bridges Ecophys.jl solve_energy_balance() to FixedPointSolver
-                                     #   (Ecophys couples Tleaf↔gs internally; bridge allows
-                                     #   PlantMapper to use it while keeping the FixedPointSolver API)
+  PlantBiophysicsExt.jl              # PRIMARY — activated when `using PlantMapper, PlantBiophysics`
+    atmosphere_bridge.jl             # make_atmosphere(forcing, step, height_node) → PlantMeteo.Atmosphere
+                                     #   strips Unitful quantities: air_temperature→T, wind_speed→Wind,
+                                     #   relative_humidity→Rh, PAR→Ri_PAR_f; outputs re-attach units
+    pb_photosynthesis.jl             # PlantBiophysicsFvcb <: AbstractPhotosynthesisModel (wraps Fvcb)
+    pb_stomata.jl                    # PlantBiophysicsMedlyn <: AbstractStomatalModel (wraps Medlyn)
+    pb_energy_balance.jl             # PlantBiophysicsMonteith — replaces FixedPointSolver
+                                     #   wraps Monteith; drives full Fvcb+Medlyn+Monteith chain
+                                     #   via PlantSimEngine model composition
+  EcophysExt.jl                      # SECONDARY — activated when `using PlantMapper, Ecophys`
+                                     #   use when Unitful-native outputs needed, or C4 photosynthesis
+    ecophys_photosynthesis.jl        # EcophysC3Photosynthesis <: AbstractPhotosynthesisModel (C3Q)
+    ecophys_c4.jl                    # EcophysC4Photosynthesis <: AbstractPhotosynthesisModel (C4Q)
+    ecophys_energy_balance.jl        # Bridges solve_energy_balance() to FixedPointSolver API
   SolarRadiationExt.jl
     par_spectrum.jl                  # photosynthetically_active_radiation(solar_result)
                                      #   integrates SolarRadiation.jl spectrum over 400–700 nm
@@ -1042,8 +1063,9 @@ ext/
 (leaf morphology), `FluidProperties.jl`, `Unitful.jl`
 Interface: implements `AbstractPlantModel` from MicroclimateMapper; consumes `AbstractForcing`
 Weakdeps: `DEBtool_J.jl`, `SolarRadiation.jl`, `BiophysicalBehaviour.jl`,
-`Ecophys.jl` (FvCB + Ball-Berry + energy balance), `SkyDomes.jl` (sky dome radiation),
-`PlantSimEngine.jl` (MTG plant architecture), `PlantGraphs.jl` (structural FSPM)
+`PlantBiophysics.jl` + `PlantMeteo.jl` (primary: FvCB + Medlyn + Monteith energy balance),
+`Ecophys.jl` (secondary: Unitful-native or C4), `SkyDomes.jl` (3D radiation),
+`PlantSimEngine.jl` (MTG architecture), `PlantGraphs.jl` (structural FSPM)
 
 ---
 
@@ -1313,7 +1335,7 @@ so we can collaboratively comment, open Issues, and suggest edits via PRs.
 2. **AnimalMapper.jl** — most direct port; `simulate_organism()` formalises the
    BiophysicalGrids ectotherm loop with digestive water budget added.
 3. **PlantMapper.jl** — `WaterLimitedVegetation` first (validates plantgro.R port, no
-   photosynthesis needed); then FarquharBerry + Medlyn + FixedPointSolver coupling.
+   photosynthesis needed); then `PlantBiophysicsExt.jl` bridge for Fvcb + Medlyn + Monteith.
 4. **MicrobeMapper.jl** — fewest dependencies; Monod + CampbellMoistureAvailability first.
 5. **AnimalMapper `PlantMapperExt.jl`** — `VegetationFoodSource` bridging WaterLimitedVegetation
    to AnimalMapper food source interface; validates plant-animal food chain.
@@ -1340,9 +1362,9 @@ so we can collaboratively comment, open Issues, and suggest edits via PRs.
 **PlantMapper:**
 1. `WaterLimitedVegetation` outputs match `plantgro.R` for identical soil ψ inputs:
    verify `plant_water_fraction`, `plant_present`, `accumulated_thermal_time`
-2. `FarquharBerryPhotosynthesis` net_assimilation_rate vs. PAR at 25°C matches published FvCB benchmarks
-3. `FixedPointSolver` converges within 10 iterations under typical summer conditions
-4. `maximum_carboxylation_rate(model, leaf_temperature)` peaks at ~25°C for C3 species
+2. `PlantBiophysics.Fvcb` net_assimilation_rate vs. PAR at 25°C matches published FvCB benchmarks via `PlantBiophysicsExt.jl`
+3. `PlantBiophysics.Monteith` Tleaf converges within 10 iterations under typical summer conditions
+4. `maximum_carboxylation_rate` peaks at ~25°C for C3 species with standard Arrhenius parameters
 
 **MicrobeMapper:**
 1. `MonodGrowthModel` at constant temperature and substrate matches analytical Monod solution
@@ -1380,13 +1402,17 @@ Items identified during this planning that belong in packages outside the *Mappe
 - Gut fill ODE (future) — `HollingTypeTwoFeeding` in AnimalMapper will eventually delegate stomach state to DEBtool_J stomach model when implemented
 - Confirm `plant_model()` 6D state (V_S, C_S, N_S, V_R, C_R, N_R) is stable for PlantMapper DEBtoolExt
 
+**PlantBiophysics.jl + PlantMeteo.jl (Rémi Vezy — c:/git/):**
+- Confirm `PlantMeteo.Atmosphere` constructor fields needed by `Monteith` (T, Wind, Rh, Cₐ, Ri_PAR_f) are all accessible via NicheMapper `AbstractForcing` accessors
+- Confirm `Fvcb` + `Medlyn` + `Monteith` PlantSimEngine composition pattern in `PlantBiophysicsExt.jl`
+- No Unitful in PlantBiophysics — units stripped on input, re-attached on output in bridge layer
+- PlantBiophysics is C3 only — EcophysExt.jl remains the path for C4 photosynthesis
+
 **Ecophys.jl (VirtualPlantLab — c:/git/Ecophys.jl):**
-- Confirm `C3Q()` (Unitful version) interface signature — PlantMapper's `EcophysExt.jl` wraps it into `AbstractPhotosynthesisModel`; need to verify input/output units match PlantMapper conventions
-- Confirm whether Ecophys.jl `solve_energy_balance()` can be bridged to PlantMapper's `FixedPointSolver` API or whether both run independently
-- Note: Medlyn stomatal model is NOT in Ecophys.jl — PlantMapper owns `MedlynStomatalConductance`
+- Now secondary weakdep; confirm `C3Q()` and `C4Q()` signatures for `EcophysExt.jl`
 
 **PlantSimEngine.jl / PlantGraphs.jl / SkyDomes.jl (VirtualPlantLab — c:/git/):**
-- These are weakdeps for future extensions (FSPM structure, 3D radiation); no action needed for skeleton build
+- Weakdeps for future extensions (FSPM structure, 3D radiation); no action needed for skeleton build
 
 **MicroclimateMapper.jl:**
 - Co-design `AbstractForcing` accessor signatures (NicheMapper.jl Layer A) — especially `soil_water_potential(forcing, step, depth_node)` return units and node indexing convention
