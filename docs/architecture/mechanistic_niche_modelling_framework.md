@@ -224,9 +224,59 @@ end
 **What NicheMapper.jl does NOT contain:** biological models, DEB, photosynthesis, microbial
 kinetics, lifecycle concepts, shared result structs, array-level MicroResult access patterns.
 
-**Dependency graph:**
+### Relationship to BiophysicalEcologyBase.jl
+
+BiophysicalEcologyBase.jl 
+defines four abstract types as shared biological domain vocabulary across the entire
+BiophysicalEcology ecosystem:
+```julia
+abstract type AbstractEnvironment end
+abstract type AbstractPhysiology end
+abstract type AbstractMorphology end
+abstract type AbstractBehavior end
 ```
-NicheMapper.jl                       (Layer A + B contracts only)
+No interface functions, no concrete types, no dependencies — a pure domain vocabulary layer.
+
+**Relationship to NicheMapper.jl:** The two packages serve different abstraction levels and
+do NOT overlap. They are complementary, not competing:
+- **BiophysicalEcologyBase**: what things ARE biologically (domain concepts)
+- **NicheMapper**: what things DO in the simulation (operational contracts for the forcing
+  data stream, the time-stepping protocol, and resource accounting)
+
+**Recommended integration:** NicheMapper.jl adds BiophysicalEcologyBase.jl as a lightweight
+dependency and subtypes its forcing abstract into the biological domain hierarchy:
+
+```julia
+using BiophysicalEcologyBase
+
+# AbstractForcing IS-A AbstractEnvironment — forcing data is a time-series representation
+# of the environment organisms inhabit. Subtypes the domain concept without adding methods.
+abstract type AbstractForcing <: AbstractEnvironment end
+
+# AbstractOrganism stays as a simulation capability marker only — it is NOT AbstractPhysiology
+# because NicheMapper.jl doesn't model physiology; it models simulation participation.
+abstract type AbstractOrganism end
+```
+
+This makes the IS-A relationship machine-checkable: any code that operates on
+`AbstractEnvironment` (e.g. future spatial packages) will accept `AbstractForcing` objects
+without explicit conversion. `AbstractOrganism` deliberately does NOT inherit from
+`AbstractPhysiology` — NicheMapper's organism marker is about simulation protocol
+participation, not biological domain identity.
+
+**AbstractLifeStage and morphology type parameters (Raf's PR note):**
+DEBtool_J.jl's `AbstractLifeStage{M<:AbstractMorph, F<:AbstractFeeding, T}` already
+composes morphology and physiology per lifestage — this is the correct home for DEB-specific
+lifecycle biology. AnimalMapper's lightweight fallback stages (`EggStage`, `JuvenileStage`,
+`AdultStage`) are non-DEB approximations and do NOT need type parameters. They do NOT inherit
+from DEBtool_J types. The DEBtool extension (`ext/DEBtoolExt.jl`) uses DEBtool_J stages
+directly; no wrapping or intermediate type is required.
+
+**Dependency graph (updated with BiophysicalEcologyBase):**
+```
+BiophysicalEcologyBase.jl            (domain vocabulary only — AbstractEnvironment, etc.)
+       ↑
+NicheMapper.jl                       (Layer A + B contracts; AbstractForcing <: AbstractEnvironment)
        ↑
 MicroclimateMapper.jl                (MicroResult <: AbstractForcing — default implementation)
        ↑
@@ -234,6 +284,10 @@ AnimalMapper.jl   PlantMapper.jl   MicrobeMapper.jl
        ↑                ↑
      AnimalMapper ext/PlantMapperExt.jl
 ```
+
+DEBtool_J.jl and HeatExchange.jl will also migrate to depend on BiophysicalEcologyBase
+(using AbstractMorphology, AbstractPhysiology, AbstractBehavior in their type hierarchies)
+— but that is outside the NicheMapper ecosystem scope.
 
 ---
 
@@ -1291,6 +1345,7 @@ NicheMapper.jl/
 module NicheMapper
 
 using Unitful
+using BiophysicalEcologyBase  # domain vocabulary — AbstractEnvironment, AbstractPhysiology, etc.
 
 export AbstractForcing, AbstractEnvironmentSampler, AbstractOrganism
 export AbstractSimulationEngine, AbstractResourceField
@@ -1301,7 +1356,9 @@ export step!, state, result, resource_availability, deplete!
 const DEFAULT_DT = 1u"hr"
 
 # ── Layer A: Forcing contracts ─────────────────────────────────────────────────
-abstract type AbstractForcing end
+# AbstractForcing IS-A AbstractEnvironment — forcing is a time-series representation of
+# the environment organisms inhabit; subtypes the domain concept without adding methods
+abstract type AbstractForcing <: AbstractEnvironment end
 struct Air end; struct Soil end
 
 air_temperature(f::AbstractForcing, step, height_node)          = error("not implemented")
@@ -1429,3 +1486,8 @@ Items identified during this planning that belong in packages outside the *Mappe
 - Co-design `AbstractForcing` accessor signatures (NicheMapper.jl Layer A) — especially `soil_water_potential(forcing, step, depth_node)` return units and node indexing convention
 - Implement `canopy_integrated_temperature()` and `root_zone_integrated_water_potential()` helpers, or confirm PlantMapper should wrap the node accessors directly
 - Confirm `AbstractPlantModel` interface (transpiration!, canopy_albedo, canopy_lai, root_density_profile) stays in MicroclimateMapper
+
+**BiophysicalEcologyBase.jl:**
+- Add as dependency of NicheMapper.jl once its 4 abstract types are stable
+- Change `abstract type AbstractForcing end` → `abstract type AbstractForcing <: AbstractEnvironment end` in NicheMapper.jl source and Project.toml
+- Coordinate with Raf: DEBtool_J.jl and HeatExchange.jl should also migrate their root abstract types to inherit from BiophysicalEcologyBase (AbstractMorphology, AbstractPhysiology, AbstractBehavior) — outside *Mapper scope but part of the same ecosystem convergence
