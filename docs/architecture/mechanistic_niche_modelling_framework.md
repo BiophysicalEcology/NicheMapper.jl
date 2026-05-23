@@ -785,40 +785,45 @@ struct JuvenilePlantStage <: AbstractPlantLifeStage end; struct AdultPlantStage 
 #   Embryo(Seed) → Birth(Germination) → Juvenile(Seedling) → Puberty(Reproduction) → Adult → Ultimate
 ```
 
-### External leaf physiology packages (c:/git/)
+### Leaf physiology strategy: build on Photosynthesis.jl
 
-Six packages from two independent ecosystems are available locally:
+Five registered packages (PlantBiophysics.jl, PlantMeteo.jl, PlantSimEngine.jl, Ecophys.jl,
+PlantGraphs.jl, SkyDomes.jl) are also available locally. Assessment:
 
-| Package | Ecosystem | Relevant content | Integration strategy |
-|---|---|---|---|
-| **PlantBiophysics.jl** | Rémi Vezy | FvCB (`Fvcb`), **Medlyn** stomata, Monteith energy balance (iterative Tleaf), boundary layer conductance | **Primary leaf physiology bridge** via `PlantBiophysicsExt.jl` |
-| **PlantMeteo.jl** | Rémi Vezy | `Atmosphere` struct (T, Wind, Rh, VPD, Cₐ, radiation) consumed by PlantBiophysics | Bridge: convert `AbstractForcing` → `Atmosphere` at each timestep |
-| **PlantSimEngine.jl** | Rémi Vezy | Modular process framework; MTG for plant architecture | Weakdep for future FSPM extensions |
-| **Ecophys.jl** | VirtualPlantLab | FvCB C3/C4 photosynthesis, Ball-Berry stomata, energy balance, **Unitful versions** | Secondary — preferred when Unitful-native outputs or C4 needed |
-| **PlantGraphs.jl** | VirtualPlantLab | L-systems / graph rewriting for dynamic structural plant models | Weakdep for future structural plant models |
-| **SkyDomes.jl** | VirtualPlantLab | Sky dome discretization, clear/cloudy sky models, PAR/NIR waveband conversion | Weakdep for 3D canopy radiation interception |
+| Package | Unitful | Autodiff-ready | Framework dep | Verdict |
+|---|---|---|---|---|
+| **Photosynthesis.jl** | ✅ comprehensive | ⚠️ needs struct update | ❌ none | **Build on this** |
+| **PlantBiophysics.jl** | ❌ no | ❌ uncertain | ✅ PlantSimEngine | Validation target only |
+| **Ecophys.jl** | ✅ light-touch | ❌ concrete types | ❌ none | Validation target only |
+| **PlantSimEngine.jl** | ❌ no | ❌ macro-generated | — | Future FSPM hook only |
+| **PlantGraphs.jl** | ❌ no | ❌ | — | Future FSPM hook only |
+| **SkyDomes.jl** | ❌ no | — | ❌ none | Future 3D radiation hook |
 
-**PlantBiophysics.jl is the primary bridge (not Ecophys.jl).** Reasons:
-- Already has `Medlyn` stomatal conductance and `Fvcb` (C3 FvCB)
-- `Monteith` energy balance already does iterative Tleaf↔gs coupling — replaces the `FixedPointSolver` in the ext
-- Composable via PlantSimEngine: photosynthesis, stomata, and energy balance chain automatically
-- **No Unitful support** — units are stripped at the NicheMapper→PlantBiophysics boundary:
-  ```julia
-  # In PlantBiophysicsExt.jl — AbstractForcing → PlantMeteo.Atmosphere
-  function make_atmosphere(forcing::AbstractForcing, step, height_node)
-      PlantMeteo.Atmosphere(
-          T    = ustrip(u"°C", air_temperature(forcing, step, height_node)),
-          Wind = ustrip(u"m/s", wind_speed(forcing, step, height_node)),
-          Rh   = relative_humidity(forcing, step, height_node),
-          Cₐ   = 400.0,
-          Ri_PAR_f = ustrip(u"W/m^2", photosynthetically_active_radiation(forcing, step)),
-      )
-  end
-  # Outputs from PlantBiophysics re-attach units before storing in PlantResult
-  ```
-- Ecophys.jl is the secondary weakdep for Unitful-native outputs or C4 photosynthesis (PlantBiophysics is C3 only)
+**Photosynthesis.jl** (c:/git/Photosynthesis.jl, written by Rafael Schouten ~2018–2020) is the
+right foundation:
+- Compositional architecture: `AbstractPhotosynthesis`, `AbstractStomatalConductance`,
+  `AbstractEnergyBalance`, `AbstractBoundaryConductance` — same design philosophy as NicheMapper
+- Unitful throughout — all struct fields declared as `Quantity` types
+- No framework dependencies — pure physics
+- Validated against MAESPA Fortran (Ball-Berry, FvCB core, full energy balance)
+- Has Medlyn, Leuning, Tuzet, Ball-Berry stomatal models; Jmax, Vcmax with Arrhenius; leaf water potential coupling
+- FieldDefaults.jl + Mixers.jl for clean struct composition (precursor to `@kwdef`)
 
-### Built-in implementations (used when PlantBiophysics.jl not loaded)
+**Strategy: revive and modernize Photosynthesis.jl, then depend on it directly.**
+PlantBiophysics/Ecophys serve only as numerical cross-validation targets, not runtime deps.
+
+**Modernisations needed before PlantMapper.jl can depend on it:**
+1. **Type parameters on numeric fields** — change `jmax25::typeof(1.0u"μmol/m^2/s")` to
+   `jmax25::T` with `T<:Number` type parameter so ForwardDiff passes `Dual` numbers through
+2. **Separate `Atmosphere` struct** — extract the `MixinEnviroVars` forcing fields into a
+   dedicated struct bridgeable from NicheMapper's `AbstractForcing` accessors
+3. **Unit tests** — replace MAESPA comparison scripts with proper `@test` suites
+4. **Register** in the Julia General registry under BiophysicalEcology
+
+Until Photosynthesis.jl is modernised and registered, PlantMapper.jl carries its own
+lightweight built-in implementations (below) and uses Photosynthesis.jl via a local path dep.
+
+### Built-in implementations (lightweight; Photosynthesis.jl preferred once modernised)
 
 **`FarquharBerryPhotosynthesis <: AbstractPhotosynthesisModel`**
 Simplified FvCB for use without PlantBiophysics.jl — Rubisco-limited (`A_c`) and
@@ -1024,20 +1029,18 @@ ext/
                                      #     Seedling(Juvenile) → Reproduction(Puberty) → Adult → Ultimate
     deb_plant_result.jl              # Extends PlantResult with DEBState (V_S, C_S, N_S, V_R, C_R, N_R)
                                      #   + current lifecycle stage at each timestep
-  PlantBiophysicsExt.jl              # PRIMARY — activated when `using PlantMapper, PlantBiophysics`
-    atmosphere_bridge.jl             # make_atmosphere(forcing, step, height_node) → PlantMeteo.Atmosphere
-                                     #   strips Unitful quantities: air_temperature→T, wind_speed→Wind,
-                                     #   relative_humidity→Rh, PAR→Ri_PAR_f; outputs re-attach units
-    pb_photosynthesis.jl             # PlantBiophysicsFvcb <: AbstractPhotosynthesisModel (wraps Fvcb)
-    pb_stomata.jl                    # PlantBiophysicsMedlyn <: AbstractStomatalModel (wraps Medlyn)
-    pb_energy_balance.jl             # PlantBiophysicsMonteith — replaces FixedPointSolver
-                                     #   wraps Monteith; drives full Fvcb+Medlyn+Monteith chain
-                                     #   via PlantSimEngine model composition
-  EcophysExt.jl                      # SECONDARY — activated when `using PlantMapper, Ecophys`
-                                     #   use when Unitful-native outputs needed, or C4 photosynthesis
-    ecophys_photosynthesis.jl        # EcophysC3Photosynthesis <: AbstractPhotosynthesisModel (C3Q)
-    ecophys_c4.jl                    # EcophysC4Photosynthesis <: AbstractPhotosynthesisModel (C4Q)
-    ecophys_energy_balance.jl        # Bridges solve_energy_balance() to FixedPointSolver API
+  PhotosynthesisExt.jl               # PRIMARY — activated when `using PlantMapper, Photosynthesis`
+                                     #   Photosynthesis.jl (Rafael Schouten) — Unitful, compositional,
+                                     #   MAESPA-validated; modernised with autodiff-ready type params
+    atmosphere_bridge.jl             # atmosphere_from_forcing(forcing, step, height_node) → Atmosphere
+                                     #   maps AbstractForcing accessors → Photosynthesis.jl env vars
+    photo_photosynthesis.jl          # PhotoFvCB <: AbstractPhotosynthesisModel
+                                     #   wraps Photosynthesis.FvCBPhotosynthesis
+    photo_stomata.jl                 # PhotoMedlyn <: AbstractStomatalModel (wraps Medlyn submodel)
+                                     #   PhotoBallBerry, PhotoLeuning, PhotoTuzet also available
+    photo_energy_balance.jl          # PhotoMaespaEnergyBalance — replaces FixedPointSolver
+                                     #   wraps MaespaEnergyBalance (iterative Tleaf solver)
+                                     #   TuzetEnergyBalance available for leaf water potential coupling
   SolarRadiationExt.jl
     par_spectrum.jl                  # photosynthetically_active_radiation(solar_result)
                                      #   integrates SolarRadiation.jl spectrum over 400–700 nm
@@ -1062,10 +1065,14 @@ ext/
 `NicheMapper.jl`, `HeatExchange.jl`, `ThermalPhysiology.jl`, `BiologicalScaling.jl`
 (leaf morphology), `FluidProperties.jl`, `Unitful.jl`
 Interface: implements `AbstractPlantModel` from MicroclimateMapper; consumes `AbstractForcing`
+Core dep (once modernised + registered): `Photosynthesis.jl` (Rafael Schouten — FvCB, Medlyn,
+Ball-Berry, Tuzet, Maespa energy balance; Unitful + compositional; local path dep until registered)
+Other deps: `NicheMapper.jl`, `HeatExchange.jl`, `ThermalPhysiology.jl`, `BiologicalScaling.jl`,
+`FluidProperties.jl`, `Unitful.jl`
 Weakdeps: `DEBtool_J.jl`, `SolarRadiation.jl`, `BiophysicalBehaviour.jl`,
-`PlantBiophysics.jl` + `PlantMeteo.jl` (primary: FvCB + Medlyn + Monteith energy balance),
-`Ecophys.jl` (secondary: Unitful-native or C4), `SkyDomes.jl` (3D radiation),
-`PlantSimEngine.jl` (MTG architecture), `PlantGraphs.jl` (structural FSPM)
+`PlantSimEngine.jl` (MTG architecture), `PlantGraphs.jl` (structural FSPM),
+`SkyDomes.jl` (3D radiation)
+Numerical cross-validation only (not runtime deps): `PlantBiophysics.jl`, `Ecophys.jl`
 
 ---
 
@@ -1334,8 +1341,9 @@ so we can collaboratively comment, open Issues, and suggest edits via PRs.
    co-design accessor signatures with MicroclimateMapper.
 2. **AnimalMapper.jl** — most direct port; `simulate_organism()` formalises the
    BiophysicalGrids ectotherm loop with digestive water budget added.
-3. **PlantMapper.jl** — `WaterLimitedVegetation` first (validates plantgro.R port, no
-   photosynthesis needed); then `PlantBiophysicsExt.jl` bridge for Fvcb + Medlyn + Monteith.
+3. **Photosynthesis.jl** — modernise for autodiff + Atmosphere struct + tests; register.
+4. **PlantMapper.jl** — `WaterLimitedVegetation` first (validates plantgro.R port); then
+   `PhotosynthesisExt.jl` for FvCB + Medlyn + Maespa energy balance via Photosynthesis.jl.
 4. **MicrobeMapper.jl** — fewest dependencies; Monod + CampbellMoistureAvailability first.
 5. **AnimalMapper `PlantMapperExt.jl`** — `VegetationFoodSource` bridging WaterLimitedVegetation
    to AnimalMapper food source interface; validates plant-animal food chain.
@@ -1362,8 +1370,8 @@ so we can collaboratively comment, open Issues, and suggest edits via PRs.
 **PlantMapper:**
 1. `WaterLimitedVegetation` outputs match `plantgro.R` for identical soil ψ inputs:
    verify `plant_water_fraction`, `plant_present`, `accumulated_thermal_time`
-2. `PlantBiophysics.Fvcb` net_assimilation_rate vs. PAR at 25°C matches published FvCB benchmarks via `PlantBiophysicsExt.jl`
-3. `PlantBiophysics.Monteith` Tleaf converges within 10 iterations under typical summer conditions
+2. `Photosynthesis.FvCBPhotosynthesis` net_assimilation_rate vs. PAR at 25°C matches PlantBiophysics.Fvcb and published benchmarks (cross-validation)
+3. `Photosynthesis.MaespaEnergyBalance` Tleaf converges within 10 iterations under typical summer conditions
 4. `maximum_carboxylation_rate` peaks at ~25°C for C3 species with standard Arrhenius parameters
 
 **MicrobeMapper:**
@@ -1402,17 +1410,20 @@ Items identified during this planning that belong in packages outside the *Mappe
 - Gut fill ODE (future) — `HollingTypeTwoFeeding` in AnimalMapper will eventually delegate stomach state to DEBtool_J stomach model when implemented
 - Confirm `plant_model()` 6D state (V_S, C_S, N_S, V_R, C_R, N_R) is stable for PlantMapper DEBtoolExt
 
-**PlantBiophysics.jl + PlantMeteo.jl (Rémi Vezy — c:/git/):**
-- Confirm `PlantMeteo.Atmosphere` constructor fields needed by `Monteith` (T, Wind, Rh, Cₐ, Ri_PAR_f) are all accessible via NicheMapper `AbstractForcing` accessors
-- Confirm `Fvcb` + `Medlyn` + `Monteith` PlantSimEngine composition pattern in `PlantBiophysicsExt.jl`
-- No Unitful in PlantBiophysics — units stripped on input, re-attached on output in bridge layer
-- PlantBiophysics is C3 only — EcophysExt.jl remains the path for C4 photosynthesis
+**Photosynthesis.jl (Rafael Schouten — c:/git/Photosynthesis.jl):**
+- Modernise struct fields to use `T<:Number` type parameters (not concrete `Float64`) so
+  ForwardDiff passes `Dual` numbers through — required for parameter estimation / autodiff
+- Extract `MixinEnviroVars` into a dedicated `Atmosphere` struct bridgeable from `AbstractForcing`
+- Add proper `@test` unit tests (currently only MAESPA comparison scripts)
+- Register in Julia General registry under BiophysicalEcology org
+- Use as `path = "../../Photosynthesis.jl"` dep in PlantMapper Project.toml until registered
 
-**Ecophys.jl (VirtualPlantLab — c:/git/Ecophys.jl):**
-- Now secondary weakdep; confirm `C3Q()` and `C4Q()` signatures for `EcophysExt.jl`
+**PlantBiophysics.jl / Ecophys.jl — cross-validation only:**
+- Use as numerical reference in test suite: same inputs → compare outputs at leaf level
+- Not runtime deps; no ext required
 
-**PlantSimEngine.jl / PlantGraphs.jl / SkyDomes.jl (VirtualPlantLab — c:/git/):**
-- Weakdeps for future extensions (FSPM structure, 3D radiation); no action needed for skeleton build
+**PlantSimEngine.jl / PlantGraphs.jl / SkyDomes.jl:**
+- Weakdeps for future extensions (FSPM structure, 3D radiation); no action for skeleton build
 
 **MicroclimateMapper.jl:**
 - Co-design `AbstractForcing` accessor signatures (NicheMapper.jl Layer A) — especially `soil_water_potential(forcing, step, depth_node)` return units and node indexing convention
