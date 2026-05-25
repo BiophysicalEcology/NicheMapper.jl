@@ -3,9 +3,5 @@ uuid = "0dd11925-8a82-4e26-8e90-74fb12eeca45"
 authors = ["Michael Kearney <m.kearney@unimelb.edu.au>", "Rafael Schouten <rafaelschouten@gmail.com>"]
 version = "0.1.0"
 
-[deps]
-Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-
 [compat]
 julia = "1.10"
-Unitful = "1"
