@@ -6,7 +6,7 @@ the Julia successor to [NicheMapR](https://github.com/mrke/NicheMapR).
 ## Packages
 
 ```
-NicheMapper.jl              ← shared semantic contracts + meta re-export umbrella
+NicheMapper.jl              ← meta package
 PlantMapper.jl              ← plant niche simulation (photosynthesis, stomata, growth)
 AnimalMapper.jl             ← animal niche simulation (thermoregulation, energy budget)
 MicrobeMapper.jl            ← microbial niche simulation (deferred)
