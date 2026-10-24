@@ -7,7 +7,7 @@ The BiophysicalEcology packages are developed with the ulimate goal of "mechanis
 Core design principles are
 - **unit and dimensional consistency**, use Unitful throughout to eliminate dimensional and unit errors, make emprical departures from physical principles clear, and increase user under understanding
 - **nomenclature clarity**, use expressive names for variables, parameters and functions
-- **modularity**, exploit multiple dispatch to take a maximally declerative approach, making it easy to switch between different sub-models and model complexity (allowing easy assessment of trade-offs between model complexity and prediction realism)
+- **modularity**, exploit multiple dispatch to take a maximally declerative approach, making it easy to switch between different sub-models and model complexity (allowing easy assessment of trade-offs between model complexity and prediction realism); see [Extending the ecosystem with multiple dispatch](extending_with_dispatch.md)
 - **differentiation**, make code compatible with autodiff for non-linear programming applications in optimal control and inverse parameter fitting
 - **performance**, enforce type stability and minimise allocation so the code runs fast
 - **compatability**, integrate with the Julia ecosystem, especially SciML and raster packages
@@ -55,58 +55,69 @@ The overall ecosystem of packages is designed to separate concerns in terms of d
 
 <!-- ecosystem-graph-start -->
 ```mermaid
+---
+title: BiophysicalEcology Julia Ecosystem
+---
+%%{init: {"theme": "dark", "flowchart": {"curve": "linear"}}}%%
 graph TD
 
-  %% Existing packages
-  BiologicalScaling(["BiologicalScaling"])
-  BiophysicalBehaviour(["BiophysicalBehaviour"])
-  BiophysicalEcologyBase(["BiophysicalEcologyBase"])
-  BiophysicalGeometry(["BiophysicalGeometry"])
-  DEBtool_J(["DEBtool_J"])
-  FluidProperties(["FluidProperties"])
-  HeatExchange(["HeatExchange"])
-  Microclimate(["Microclimate"])
-  NicheMapper(["NicheMapper"])
-  SolarRadiation(["SolarRadiation"])
-  ThermalPhysiology(["ThermalPhysiology"])
+  AnimalMapper["AnimalMapper"]:::mapper
+  BiologicalScaling["BiologicalScaling"]:::pkg
+  BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
+  BiophysicalEcologyBase["BiophysicalEcologyBase"]:::pkg
+  BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  DEBtool_J["DEBtool_J"]:::pkg
+  FluidProperties["FluidProperties"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  Microclimate["Microclimate"]:::pkg
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  NicheMapper["NicheMapper"]:::pkg
+  PlantMapper["PlantMapper"]:::mapper
+  SolarRadiation["SolarRadiation"]:::pkg
+  ThermalPhysiology["ThermalPhysiology"]:::pkg
 
-  %% Planned packages
-  AnimalMapper(["AnimalMapper ⬡"]):::planned
-  MicrobeMapper(["MicrobeMapper ⬡"]):::planned
-  MicroclimateMapper(["MicroclimateMapper ⬡"]):::planned
-  PlantMapper(["PlantMapper ⬡"]):::planned
-
-  %% Dependencies
-  MicroclimateMapper -.-> AnimalMapper
-  HeatExchange -.-> AnimalMapper
-  BiophysicalBehaviour -.-> AnimalMapper
-  ThermalPhysiology -.-> AnimalMapper
-  BiologicalScaling -.-> AnimalMapper
-  DEBtool_J -.-> AnimalMapper
-  HeatExchange --> BiophysicalBehaviour
+  BiologicalScaling --> AnimalMapper
+  BiophysicalBehaviour --> AnimalMapper
+  DEBtool_J --> AnimalMapper
+  HeatExchange --> AnimalMapper
+  MicroclimateMapper --> AnimalMapper
+  ThermalPhysiology --> AnimalMapper
   BiophysicalGeometry --> BiophysicalBehaviour
   FluidProperties --> BiophysicalBehaviour
+  HeatExchange --> BiophysicalBehaviour
   BiophysicalGeometry --> HeatExchange
   FluidProperties --> HeatExchange
-  MicroclimateMapper -.-> MicrobeMapper
-  ThermalPhysiology -.-> MicrobeMapper
-  BiologicalScaling -.-> MicrobeMapper
-  DEBtool_J -.-> MicrobeMapper
-  SolarRadiation --> Microclimate
+  BiologicalScaling --> MicrobeMapper
+  DEBtool_J --> MicrobeMapper
+  MicroclimateMapper --> MicrobeMapper
+  ThermalPhysiology --> MicrobeMapper
+  BiophysicalGeometry --> Microclimate
   FluidProperties --> Microclimate
-  Microclimate -.-> MicroclimateMapper
-  SolarRadiation -.-> MicroclimateMapper
-  MicroclimateMapper -.-> NicheMapper
-  AnimalMapper -.-> NicheMapper
-  PlantMapper -.-> NicheMapper
-  MicrobeMapper -.-> NicheMapper
-  MicroclimateMapper -.-> PlantMapper
-  HeatExchange -.-> PlantMapper
-  ThermalPhysiology -.-> PlantMapper
-  BiologicalScaling -.-> PlantMapper
-  DEBtool_J -.-> PlantMapper
+  HeatExchange --> Microclimate
+  SolarRadiation --> Microclimate
+  FluidProperties --> MicroclimateMapper
+  Microclimate --> MicroclimateMapper
+  SolarRadiation --> MicroclimateMapper
+  AnimalMapper --> NicheMapper
+  MicrobeMapper --> NicheMapper
+  MicroclimateMapper --> NicheMapper
+  PlantMapper --> NicheMapper
+  BiologicalScaling --> PlantMapper
+  DEBtool_J --> PlantMapper
+  HeatExchange --> PlantMapper
+  MicroclimateMapper --> PlantMapper
+  ThermalPhysiology --> PlantMapper
 
-  classDef planned stroke-dasharray:5 5,fill:#3b82f6
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  linkStyle 0,11,26 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1,20,22,23,25 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2,12,27 stroke:#e0b020,stroke-width:2px
+  linkStyle 3,8,17,28 stroke:#e0553f,stroke-width:2px
+  linkStyle 4,13,24,29 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 5,14,30 stroke:#b060c0,stroke-width:2px
+  linkStyle 6,7,9,10,15,16,18,19,21 stroke:#d0d0d0,stroke-width:2px
 ```
 <!-- ecosystem-graph-end -->
 

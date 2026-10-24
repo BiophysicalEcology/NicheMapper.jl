@@ -20,6 +20,7 @@ const EXISTING = (
     "ThermalPhysiology.jl",
     "BiologicalScaling.jl",
     "Microclimate.jl",
+    "MicroclimateMapper.jl",
     "HeatExchange.jl",
     "BiophysicalBehaviour.jl",
     "DEBtool_J.jl",
@@ -29,8 +30,7 @@ const EXISTING = (
 # Packages not yet on GitHub — deps defined here until their repos exist.
 # Keys are Symbol(packagename) without the .jl suffix.
 const PLANNED = (
-    MicroclimateMapper = ["Microclimate.jl", "SolarRadiation.jl"],
-    AnimalMapper       = ["MicroclimateMapper.jl", "HeatExchange.jl",
+    AnimalMapper      = ["MicroclimateMapper.jl", "HeatExchange.jl",
                           "BiophysicalBehaviour.jl", "ThermalPhysiology.jl",
                           "BiologicalScaling.jl", "DEBtool_J.jl"],
     PlantMapper        = ["MicroclimateMapper.jl", "HeatExchange.jl",
@@ -88,35 +88,53 @@ strip_jl(pkg) = replace(pkg, ".jl" => "")
 const MARKER_START = "<!-- ecosystem-graph-start -->"
 const MARKER_END   = "<!-- ecosystem-graph-end -->"
 
+# Edge colour by the package depended on; others are grey.
+const EDGE_COLOURS = Dict(
+    "HeatExchange.jl"         => "#e0553f",
+    "Microclimate.jl"         => "#2f7fe0",
+    "BiophysicalBehaviour.jl" => "#2f7fe0",
+    "AnimalMapper.jl"         => "#2f7fe0",
+    "PlantMapper.jl"          => "#2f7fe0",
+    "MicrobeMapper.jl"        => "#2f7fe0",
+    "BiologicalScaling.jl"    => "#3a9a6a",
+    "DEBtool_J.jl"            => "#e0b020",
+    "ThermalPhysiology.jl"    => "#b060c0",
+    "MicroclimateMapper.jl"   => "#1aa0d0",
+)
+const DEFAULT_EDGE_COLOUR = "#d0d0d0"
+
+is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
+
 function mermaid_block(graph)
-    existing = Set(EXISTING)
-    planned  = Set(sym_to_pkg.(propertynames(PLANNED)))
-    is_planned(pkg) = pkg ∈ planned
+    nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
 
     io = IOBuffer()
     println(io, "```mermaid")
+    println(io, "---")
+    println(io, "title: BiophysicalEcology Julia Ecosystem")
+    println(io, "---")
+    println(io, "%%{init: {\"theme\": \"dark\", \"flowchart\": {\"curve\": \"linear\"}}}%%")
     println(io, "graph TD")
     println(io)
-    println(io, "  %% Existing packages")
-    for pkg in sort(collect(existing))
-        println(io, "  $(node_id(pkg))([\"$(strip_jl(pkg))\"])")
+    for pkg in sort(collect(nodes))
+        println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]", is_mapper(pkg) ? ":::mapper" : ":::pkg")
     end
     println(io)
-    println(io, "  %% Planned packages")
-    for pkg in sort(collect(planned))
-        println(io, "  $(node_id(pkg))([\"$(strip_jl(pkg)) ⬡\"]):::planned")
-    end
-    println(io)
-    println(io, "  %% Dependencies")
+    colours = String[]
     for (pkg, deps) in sort(collect(graph))
-        for dep in deps
-            (dep ∈ existing || dep ∈ planned) || continue
-            arrow = (is_planned(pkg) || is_planned(dep)) ? "-.->" : "-->"
-            println(io, "  $(node_id(dep)) $arrow $(node_id(pkg))")
+        for dep in sort(deps)
+            dep ∈ nodes || continue
+            println(io, "  $(node_id(dep)) --> $(node_id(pkg))")
+            push!(colours, get(EDGE_COLOURS, dep, DEFAULT_EDGE_COLOUR))
         end
     end
     println(io)
-    println(io, "  classDef planned stroke-dasharray:5 5,fill:#3b82f6")
+    println(io, "  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff")
+    println(io, "  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff")
+    for colour in unique(colours)
+        links = join(findall(==(colour), colours) .- 1, ",")
+        println(io, "  linkStyle $links stroke:$colour,stroke-width:2px")
+    end
     print(io, "```")
     return String(take!(io))
 end
