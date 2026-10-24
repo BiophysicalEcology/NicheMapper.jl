@@ -1,6 +1,6 @@
 # Run with: julia scripts/ecosystem_graph.jl
 # Fetches Project.toml from each ecosystem GitHub repo and writes a Mermaid
-# dependency diagram into docs/architecture/mechanistic_niche_modelling_framework.md.
+# dependency diagram into docs/src/architecture/mechanistic_niche_modelling_framework.md.
 
 using Downloads, TOML
 
@@ -147,6 +147,6 @@ function inject_into_doc(block, path)
     write(path, content[1:first(i)-1] * MARKER_START * "\n" * block * "\n" * MARKER_END * content[last(j)+1:end])
 end
 
-docpath = joinpath(@__DIR__, "..", "docs", "architecture", "mechanistic_niche_modelling_framework.md")
+docpath = joinpath(@__DIR__, "..", "docs", "src", "architecture", "mechanistic_niche_modelling_framework.md")
 inject_into_doc(mermaid_block(build_graph()), docpath)
 println("Updated $docpath")

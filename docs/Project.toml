@@ -1,0 +1,7 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterVitepress = "4710194d-e776-4893-9690-8d956a29c365"
+NicheMapper = "0dd11925-8a82-4e26-8e90-74fb12eeca45"
+
+[sources]
+NicheMapper = {path = ".."}

@@ -19,11 +19,11 @@ independently.
 ## Architecture
 
 The full design rationale and interface specifications are in:
-[docs/architecture/mechanistic_niche_modelling_framework.md](docs/architecture/mechanistic_niche_modelling_framework.md)
+[docs/src/architecture/mechanistic_niche_modelling_framework.md](docs/src/architecture/mechanistic_niche_modelling_framework.md)
 
 ## Status
 
-Early design stage. See [docs/architecture/](docs/architecture/) for the current design
+Early design stage. See [docs/src/architecture/](docs/src/architecture/) for the current design
 and open [Issues](issues) to discuss architecture decisions.
 
 ## Development
