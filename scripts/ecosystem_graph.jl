@@ -108,45 +108,52 @@ const DEFAULT_EDGE_COLOUR = "#d0d0d0"
 
 is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
 
-# One graph per subset, showing the dependencies among its packages; `nothing` is all packages.
-const SUBSETS = (
-    (title = "Microclimate",
-     packages = ["FluidProperties.jl", "SolarRadiation.jl", "BiophysicalGeometry.jl",
-                 "HeatExchange.jl", "Microclimate.jl", "MicroclimateMapper.jl",
-                 "Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl"]),
-    (title = "Heat exchange",
-     packages = ["FluidProperties.jl", "BiophysicalGeometry.jl", "HeatExchange.jl",
-                 "BiophysicalBehaviour.jl", "Microclimate.jl", "AnimalMapper.jl", "PlantMapper.jl"]),
-    (title = "Organism mappers",
-     packages = ["MicroclimateMapper.jl", "HeatExchange.jl", "BiophysicalBehaviour.jl",
-                 "ThermalPhysiology.jl", "BiologicalScaling.jl", "DEBtool_J.jl",
-                 "AnimalMapper.jl", "PlantMapper.jl", "MicrobeMapper.jl", "NicheMapper.jl"]),
-    (title = "All packages", packages = nothing),
+# One graph per focus package: what it depends on, and with `dependents` what depends on it.
+# `nothing` draws every package.
+const FOCUS = (
+    (focus = "Microclimate.jl",       dependents = false),
+    (focus = "HeatExchange.jl",       dependents = true),
+    (focus = "MicroclimateMapper.jl", dependents = false),
+    (focus = "AnimalMapper.jl",       dependents = false),
+    (focus = "PlantMapper.jl",        dependents = false),
+    (focus = "MicrobeMapper.jl",      dependents = false),
+    (focus = "NicheMapper.jl",        dependents = false),
+    (focus = nothing,                 dependents = false),
 )
 
-graph_blocks(graph) = join(map(SUBSETS) do s
-    "### $(s.title)\n\n" * mermaid_block(graph, s.packages)
+graph_blocks(graph) = join(map(FOCUS) do f
+    title = isnothing(f.focus) ? "All packages" : f.focus
+    "### $title\n\n" * mermaid_block(graph, f.focus, f.dependents)
 end, "\n\n")
 
-function mermaid_block(graph, packages = nothing)
+function mermaid_block(graph, focus = nothing, dependents = false)
     all_nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
-    nodes = isnothing(packages) ? all_nodes : Set(packages) ∩ (all_nodes ∪ Set(EXTERNAL))
+    nodes = if isnothing(focus)
+        all_nodes
+    else
+        users = dependents ? [pkg for (pkg, deps) in graph if focus ∈ deps] : String[]
+        Set([focus; graph[focus]; users]) ∩ (all_nodes ∪ Set(EXTERNAL))
+    end
+    shown(dep, pkg) = isnothing(focus) || pkg == focus || dep == focus
 
     io = IOBuffer()
     println(io, "```mermaid")
     println(io, "%%{init: {\"theme\": \"dark\"}}%%")
     println(io, "graph TD")
     println(io)
-    for pkg in sort(collect(nodes))
-        class = pkg ∈ EXTERNAL ? ":::external" : is_mapper(pkg) ? ":::mapper" : ":::pkg"
-        println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]", class)
+    for pkg in sort(collect(setdiff(nodes, EXTERNAL)))
+        println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]", is_mapper(pkg) ? ":::mapper" : ":::pkg")
+    end
+    # Outside packages declared last, so they sit together on the right
+    for pkg in EXTERNAL
+        pkg ∈ nodes && println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]:::external")
     end
     println(io)
     colours = String[]
     for (pkg, deps) in sort(collect(graph))
         pkg ∈ nodes || continue
-        for dep in sort(deps)
-            dep ∈ nodes || continue
+        for dep in sort(deps; by = d -> (d ∈ EXTERNAL, d))
+            (dep ∈ nodes && shown(dep, pkg)) || continue
             println(io, "  $(node_id(dep)) --> $(node_id(pkg))")
             push!(colours, get(EDGE_COLOURS, dep, DEFAULT_EDGE_COLOUR))
         end

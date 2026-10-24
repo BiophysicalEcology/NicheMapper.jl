@@ -54,7 +54,7 @@ The overall ecosystem of packages is designed to separate concerns in terms of d
 ## Dependencies
 
 <!-- ecosystem-graph-start -->
-### Microclimate
+### Microclimate.jl
 
 ```mermaid
 %%{init: {"theme": "dark"}}%%
@@ -62,36 +62,23 @@ graph TD
 
   BiophysicalGeometry["BiophysicalGeometry"]:::pkg
   FluidProperties["FluidProperties"]:::pkg
-  Geomorphometry["Geomorphometry"]:::external
   HeatExchange["HeatExchange"]:::pkg
   Microclimate["Microclimate"]:::pkg
-  MicroclimateMapper["MicroclimateMapper"]:::mapper
-  RasterDataSources["RasterDataSources"]:::external
-  Rasters["Rasters"]:::external
   SolarRadiation["SolarRadiation"]:::pkg
 
-  BiophysicalGeometry --> HeatExchange
-  FluidProperties --> HeatExchange
   BiophysicalGeometry --> Microclimate
   FluidProperties --> Microclimate
   HeatExchange --> Microclimate
   SolarRadiation --> Microclimate
-  FluidProperties --> MicroclimateMapper
-  Geomorphometry --> MicroclimateMapper
-  Microclimate --> MicroclimateMapper
-  RasterDataSources --> MicroclimateMapper
-  Rasters --> MicroclimateMapper
-  SolarRadiation --> MicroclimateMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,1,2,3,5,6,7,9,10,11 stroke:#d0d0d0,stroke-width:2px
-  linkStyle 4 stroke:#e0553f,stroke-width:2px
-  linkStyle 8 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 0,1,3 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 2 stroke:#e0553f,stroke-width:2px
 ```
 
-### Heat exchange
+### HeatExchange.jl
 
 ```mermaid
 %%{init: {"theme": "dark"}}%%
@@ -105,27 +92,49 @@ graph TD
   Microclimate["Microclimate"]:::pkg
   PlantMapper["PlantMapper"]:::mapper
 
-  BiophysicalBehaviour --> AnimalMapper
   HeatExchange --> AnimalMapper
-  BiophysicalGeometry --> BiophysicalBehaviour
-  FluidProperties --> BiophysicalBehaviour
   HeatExchange --> BiophysicalBehaviour
   BiophysicalGeometry --> HeatExchange
   FluidProperties --> HeatExchange
-  BiophysicalGeometry --> Microclimate
-  FluidProperties --> Microclimate
   HeatExchange --> Microclimate
   HeatExchange --> PlantMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0 stroke:#2f7fe0,stroke-width:2px
-  linkStyle 1,4,9,10 stroke:#e0553f,stroke-width:2px
-  linkStyle 2,3,5,6,7,8 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 0,1,4,5 stroke:#e0553f,stroke-width:2px
+  linkStyle 2,3 stroke:#d0d0d0,stroke-width:2px
 ```
 
-### Organism mappers
+### MicroclimateMapper.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  FluidProperties["FluidProperties"]:::pkg
+  Microclimate["Microclimate"]:::pkg
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  SolarRadiation["SolarRadiation"]:::pkg
+  Rasters["Rasters"]:::external
+  RasterDataSources["RasterDataSources"]:::external
+  Geomorphometry["Geomorphometry"]:::external
+
+  FluidProperties --> MicroclimateMapper
+  Microclimate --> MicroclimateMapper
+  SolarRadiation --> MicroclimateMapper
+  Geomorphometry --> MicroclimateMapper
+  RasterDataSources --> MicroclimateMapper
+  Rasters --> MicroclimateMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,2,3,4,5 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 1 stroke:#2f7fe0,stroke-width:2px
+```
+
+### AnimalMapper.jl
 
 ```mermaid
 %%{init: {"theme": "dark"}}%%
@@ -136,10 +145,7 @@ graph TD
   BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
   DEBtool_J["DEBtool_J"]:::pkg
   HeatExchange["HeatExchange"]:::pkg
-  MicrobeMapper["MicrobeMapper"]:::mapper
   MicroclimateMapper["MicroclimateMapper"]:::mapper
-  NicheMapper["NicheMapper"]:::pkg
-  PlantMapper["PlantMapper"]:::mapper
   ThermalPhysiology["ThermalPhysiology"]:::pkg
 
   BiologicalScaling --> AnimalMapper
@@ -148,15 +154,31 @@ graph TD
   HeatExchange --> AnimalMapper
   MicroclimateMapper --> AnimalMapper
   ThermalPhysiology --> AnimalMapper
-  HeatExchange --> BiophysicalBehaviour
-  BiologicalScaling --> MicrobeMapper
-  DEBtool_J --> MicrobeMapper
-  MicroclimateMapper --> MicrobeMapper
-  ThermalPhysiology --> MicrobeMapper
-  AnimalMapper --> NicheMapper
-  MicrobeMapper --> NicheMapper
-  MicroclimateMapper --> NicheMapper
-  PlantMapper --> NicheMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2 stroke:#e0b020,stroke-width:2px
+  linkStyle 3 stroke:#e0553f,stroke-width:2px
+  linkStyle 4 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 5 stroke:#b060c0,stroke-width:2px
+```
+
+### PlantMapper.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  BiologicalScaling["BiologicalScaling"]:::pkg
+  DEBtool_J["DEBtool_J"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  PlantMapper["PlantMapper"]:::mapper
+  ThermalPhysiology["ThermalPhysiology"]:::pkg
+
   BiologicalScaling --> PlantMapper
   DEBtool_J --> PlantMapper
   HeatExchange --> PlantMapper
@@ -166,12 +188,61 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,7,15 stroke:#3a9a6a,stroke-width:2px
-  linkStyle 1,11,12,14 stroke:#2f7fe0,stroke-width:2px
-  linkStyle 2,8,16 stroke:#e0b020,stroke-width:2px
-  linkStyle 3,6,17 stroke:#e0553f,stroke-width:2px
-  linkStyle 4,9,13,18 stroke:#1aa0d0,stroke-width:2px
-  linkStyle 5,10,19 stroke:#b060c0,stroke-width:2px
+  linkStyle 0 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1 stroke:#e0b020,stroke-width:2px
+  linkStyle 2 stroke:#e0553f,stroke-width:2px
+  linkStyle 3 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 4 stroke:#b060c0,stroke-width:2px
+```
+
+### MicrobeMapper.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  BiologicalScaling["BiologicalScaling"]:::pkg
+  DEBtool_J["DEBtool_J"]:::pkg
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  ThermalPhysiology["ThermalPhysiology"]:::pkg
+
+  BiologicalScaling --> MicrobeMapper
+  DEBtool_J --> MicrobeMapper
+  MicroclimateMapper --> MicrobeMapper
+  ThermalPhysiology --> MicrobeMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1 stroke:#e0b020,stroke-width:2px
+  linkStyle 2 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 3 stroke:#b060c0,stroke-width:2px
+```
+
+### NicheMapper.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  AnimalMapper["AnimalMapper"]:::mapper
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  NicheMapper["NicheMapper"]:::pkg
+  PlantMapper["PlantMapper"]:::mapper
+
+  AnimalMapper --> NicheMapper
+  MicrobeMapper --> NicheMapper
+  MicroclimateMapper --> NicheMapper
+  PlantMapper --> NicheMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,1,3 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2 stroke:#1aa0d0,stroke-width:2px
 ```
 
 ### All packages
