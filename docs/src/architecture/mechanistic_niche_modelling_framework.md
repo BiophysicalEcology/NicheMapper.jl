@@ -54,11 +54,121 @@ The overall ecosystem of packages is designed to separate concerns in terms of d
 ## Dependencies
 
 <!-- ecosystem-graph-start -->
+### Microclimate
+
 ```mermaid
----
-title: BiophysicalEcology Julia Ecosystem
----
-%%{init: {"theme": "dark", "flowchart": {"curve": "linear"}}}%%
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  FluidProperties["FluidProperties"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  Microclimate["Microclimate"]:::pkg
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  SolarRadiation["SolarRadiation"]:::pkg
+
+  BiophysicalGeometry --> HeatExchange
+  FluidProperties --> HeatExchange
+  BiophysicalGeometry --> Microclimate
+  FluidProperties --> Microclimate
+  HeatExchange --> Microclimate
+  SolarRadiation --> Microclimate
+  FluidProperties --> MicroclimateMapper
+  Microclimate --> MicroclimateMapper
+  SolarRadiation --> MicroclimateMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  linkStyle 0,1,2,3,5,6,8 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 4 stroke:#e0553f,stroke-width:2px
+  linkStyle 7 stroke:#2f7fe0,stroke-width:2px
+```
+
+### Heat exchange
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  AnimalMapper["AnimalMapper"]:::mapper
+  BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
+  BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  FluidProperties["FluidProperties"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  Microclimate["Microclimate"]:::pkg
+  PlantMapper["PlantMapper"]:::mapper
+
+  BiophysicalBehaviour --> AnimalMapper
+  HeatExchange --> AnimalMapper
+  BiophysicalGeometry --> BiophysicalBehaviour
+  FluidProperties --> BiophysicalBehaviour
+  HeatExchange --> BiophysicalBehaviour
+  BiophysicalGeometry --> HeatExchange
+  FluidProperties --> HeatExchange
+  BiophysicalGeometry --> Microclimate
+  FluidProperties --> Microclimate
+  HeatExchange --> Microclimate
+  HeatExchange --> PlantMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  linkStyle 0 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 1,4,9,10 stroke:#e0553f,stroke-width:2px
+  linkStyle 2,3,5,6,7,8 stroke:#d0d0d0,stroke-width:2px
+```
+
+### Organism mappers
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  AnimalMapper["AnimalMapper"]:::mapper
+  BiologicalScaling["BiologicalScaling"]:::pkg
+  BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
+  DEBtool_J["DEBtool_J"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  MicroclimateMapper["MicroclimateMapper"]:::mapper
+  NicheMapper["NicheMapper"]:::pkg
+  PlantMapper["PlantMapper"]:::mapper
+  ThermalPhysiology["ThermalPhysiology"]:::pkg
+
+  BiologicalScaling --> AnimalMapper
+  BiophysicalBehaviour --> AnimalMapper
+  DEBtool_J --> AnimalMapper
+  HeatExchange --> AnimalMapper
+  MicroclimateMapper --> AnimalMapper
+  ThermalPhysiology --> AnimalMapper
+  HeatExchange --> BiophysicalBehaviour
+  BiologicalScaling --> MicrobeMapper
+  DEBtool_J --> MicrobeMapper
+  MicroclimateMapper --> MicrobeMapper
+  ThermalPhysiology --> MicrobeMapper
+  AnimalMapper --> NicheMapper
+  MicrobeMapper --> NicheMapper
+  MicroclimateMapper --> NicheMapper
+  PlantMapper --> NicheMapper
+  BiologicalScaling --> PlantMapper
+  DEBtool_J --> PlantMapper
+  HeatExchange --> PlantMapper
+  MicroclimateMapper --> PlantMapper
+  ThermalPhysiology --> PlantMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  linkStyle 0,7,15 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1,11,12,14 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2,8,16 stroke:#e0b020,stroke-width:2px
+  linkStyle 3,6,17 stroke:#e0553f,stroke-width:2px
+  linkStyle 4,9,13,18 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 5,10,19 stroke:#b060c0,stroke-width:2px
+```
+
+### All packages
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
 graph TD
 
   AnimalMapper["AnimalMapper"]:::mapper

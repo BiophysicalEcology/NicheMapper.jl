@@ -105,15 +105,32 @@ const DEFAULT_EDGE_COLOUR = "#d0d0d0"
 
 is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
 
-function mermaid_block(graph)
-    nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
+# One graph per subset, showing the dependencies among its packages; `nothing` is all packages.
+const SUBSETS = (
+    (title = "Microclimate",
+     packages = ["FluidProperties.jl", "SolarRadiation.jl", "BiophysicalGeometry.jl",
+                 "HeatExchange.jl", "Microclimate.jl", "MicroclimateMapper.jl"]),
+    (title = "Heat exchange",
+     packages = ["FluidProperties.jl", "BiophysicalGeometry.jl", "HeatExchange.jl",
+                 "BiophysicalBehaviour.jl", "Microclimate.jl", "AnimalMapper.jl", "PlantMapper.jl"]),
+    (title = "Organism mappers",
+     packages = ["MicroclimateMapper.jl", "HeatExchange.jl", "BiophysicalBehaviour.jl",
+                 "ThermalPhysiology.jl", "BiologicalScaling.jl", "DEBtool_J.jl",
+                 "AnimalMapper.jl", "PlantMapper.jl", "MicrobeMapper.jl", "NicheMapper.jl"]),
+    (title = "All packages", packages = nothing),
+)
+
+graph_blocks(graph) = join(map(SUBSETS) do s
+    "### $(s.title)\n\n" * mermaid_block(graph, s.packages)
+end, "\n\n")
+
+function mermaid_block(graph, packages = nothing)
+    all_nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
+    nodes = isnothing(packages) ? all_nodes : Set(packages) ∩ all_nodes
 
     io = IOBuffer()
     println(io, "```mermaid")
-    println(io, "---")
-    println(io, "title: BiophysicalEcology Julia Ecosystem")
-    println(io, "---")
-    println(io, "%%{init: {\"theme\": \"dark\", \"flowchart\": {\"curve\": \"linear\"}}}%%")
+    println(io, "%%{init: {\"theme\": \"dark\"}}%%")
     println(io, "graph TD")
     println(io)
     for pkg in sort(collect(nodes))
@@ -122,6 +139,7 @@ function mermaid_block(graph)
     println(io)
     colours = String[]
     for (pkg, deps) in sort(collect(graph))
+        pkg ∈ nodes || continue
         for dep in sort(deps)
             dep ∈ nodes || continue
             println(io, "  $(node_id(dep)) --> $(node_id(pkg))")
@@ -148,5 +166,5 @@ function inject_into_doc(block, path)
 end
 
 docpath = joinpath(@__DIR__, "..", "docs", "src", "architecture", "mechanistic_niche_modelling_framework.md")
-inject_into_doc(mermaid_block(build_graph()), docpath)
+inject_into_doc(graph_blocks(build_graph()), docpath)
 println("Updated $docpath")
