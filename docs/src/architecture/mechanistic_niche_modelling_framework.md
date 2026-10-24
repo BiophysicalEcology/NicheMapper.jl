@@ -62,9 +62,12 @@ graph TD
 
   BiophysicalGeometry["BiophysicalGeometry"]:::pkg
   FluidProperties["FluidProperties"]:::pkg
+  Geomorphometry["Geomorphometry"]:::external
   HeatExchange["HeatExchange"]:::pkg
   Microclimate["Microclimate"]:::pkg
   MicroclimateMapper["MicroclimateMapper"]:::mapper
+  RasterDataSources["RasterDataSources"]:::external
+  Rasters["Rasters"]:::external
   SolarRadiation["SolarRadiation"]:::pkg
 
   BiophysicalGeometry --> HeatExchange
@@ -74,14 +77,18 @@ graph TD
   HeatExchange --> Microclimate
   SolarRadiation --> Microclimate
   FluidProperties --> MicroclimateMapper
+  Geomorphometry --> MicroclimateMapper
   Microclimate --> MicroclimateMapper
+  RasterDataSources --> MicroclimateMapper
+  Rasters --> MicroclimateMapper
   SolarRadiation --> MicroclimateMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
-  linkStyle 0,1,2,3,5,6,8 stroke:#d0d0d0,stroke-width:2px
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,1,2,3,5,6,7,9,10,11 stroke:#d0d0d0,stroke-width:2px
   linkStyle 4 stroke:#e0553f,stroke-width:2px
-  linkStyle 7 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 8 stroke:#2f7fe0,stroke-width:2px
 ```
 
 ### Heat exchange
@@ -112,6 +119,7 @@ graph TD
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
   linkStyle 0 stroke:#2f7fe0,stroke-width:2px
   linkStyle 1,4,9,10 stroke:#e0553f,stroke-width:2px
   linkStyle 2,3,5,6,7,8 stroke:#d0d0d0,stroke-width:2px
@@ -157,6 +165,7 @@ graph TD
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
   linkStyle 0,7,15 stroke:#3a9a6a,stroke-width:2px
   linkStyle 1,11,12,14 stroke:#2f7fe0,stroke-width:2px
   linkStyle 2,8,16 stroke:#e0b020,stroke-width:2px
@@ -221,6 +230,7 @@ graph TD
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
   linkStyle 0,11,26 stroke:#3a9a6a,stroke-width:2px
   linkStyle 1,20,22,23,25 stroke:#2f7fe0,stroke-width:2px
   linkStyle 2,12,27 stroke:#e0b020,stroke-width:2px

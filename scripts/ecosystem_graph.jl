@@ -41,6 +41,9 @@ const PLANNED = (
 )
 
 # Planned future deps for existing packages not yet reflected in their Project.toml.
+# Packages outside the ecosystem, drawn only in subsets that list them.
+const EXTERNAL = ("Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl")
+
 const FUTURE_DEPS = (
     NicheMapper = ["MicroclimateMapper.jl", "AnimalMapper.jl",
                    "PlantMapper.jl", "MicrobeMapper.jl"],
@@ -71,7 +74,7 @@ function fetch_deps(pkg, ecosystem)
 end
 
 function build_graph()
-    ecosystem = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
+    ecosystem = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED))) ∪ Set(EXTERNAL)
     graph = Dict(pkg => fetch_deps(pkg, ecosystem) for pkg in EXISTING)
     for k in propertynames(PLANNED)
         graph[sym_to_pkg(k)] = getfield(PLANNED, k)
@@ -109,7 +112,8 @@ is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
 const SUBSETS = (
     (title = "Microclimate",
      packages = ["FluidProperties.jl", "SolarRadiation.jl", "BiophysicalGeometry.jl",
-                 "HeatExchange.jl", "Microclimate.jl", "MicroclimateMapper.jl"]),
+                 "HeatExchange.jl", "Microclimate.jl", "MicroclimateMapper.jl",
+                 "Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl"]),
     (title = "Heat exchange",
      packages = ["FluidProperties.jl", "BiophysicalGeometry.jl", "HeatExchange.jl",
                  "BiophysicalBehaviour.jl", "Microclimate.jl", "AnimalMapper.jl", "PlantMapper.jl"]),
@@ -126,7 +130,7 @@ end, "\n\n")
 
 function mermaid_block(graph, packages = nothing)
     all_nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
-    nodes = isnothing(packages) ? all_nodes : Set(packages) ∩ all_nodes
+    nodes = isnothing(packages) ? all_nodes : Set(packages) ∩ (all_nodes ∪ Set(EXTERNAL))
 
     io = IOBuffer()
     println(io, "```mermaid")
@@ -134,7 +138,8 @@ function mermaid_block(graph, packages = nothing)
     println(io, "graph TD")
     println(io)
     for pkg in sort(collect(nodes))
-        println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]", is_mapper(pkg) ? ":::mapper" : ":::pkg")
+        class = pkg ∈ EXTERNAL ? ":::external" : is_mapper(pkg) ? ":::mapper" : ":::pkg"
+        println(io, "  $(node_id(pkg))[\"$(strip_jl(pkg))\"]", class)
     end
     println(io)
     colours = String[]
@@ -149,6 +154,7 @@ function mermaid_block(graph, packages = nothing)
     println(io)
     println(io, "  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff")
     println(io, "  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff")
+    println(io, "  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe")
     for colour in unique(colours)
         links = join(findall(==(colour), colours) .- 1, ",")
         println(io, "  linkStyle $links stroke:$colour,stroke-width:2px")
