@@ -10,7 +10,7 @@ shows how they build on each other.
 
 | Package | What it provides | Docs |
 |---|---|---|
-| Microclimate.jl | Soil, surface, snow and canopy energy and water balance; hourly microclimate profiles for one site | [docs](https://biophysicalecology.github.io/Microclimate.jl/dev/) |
+| Microclimate.jl | Soil, surface, snow and canopy energy and water balance; hourly microclimate profiles for one site | [docs](https://biophysicalecology.github.io/Microclimate.jl/previews/PR147/) |
 | MicroclimateMapper.jl | Microclimate.jl over points and grids, from weather, terrain, soil and land cover data sets | [docs](https://biophysicalecology.github.io/MicroclimateMapper.jl/dev/) |
 | SolarRadiation.jl | Solar geometry and spectral direct, diffuse and global irradiance | [docs](https://biophysicalecology.github.io/SolarRadiation.jl/previews/PR21/) |
 | FluidProperties.jl | Properties of air, water vapour and liquid water | [docs](https://biophysicalecology.github.io/FluidProperties.jl/dev/) |
