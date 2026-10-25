@@ -1,5 +1,9 @@
 # NicheMapper.jl
 
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://BiophysicalEcology.github.io/NicheMapper.jl/dev)
+[![Documentation](https://github.com/BiophysicalEcology/NicheMapper.jl/actions/workflows/Documentation.yml/badge.svg)](https://github.com/BiophysicalEcology/NicheMapper.jl/actions/workflows/Documentation.yml)
+[![CI](https://github.com/BiophysicalEcology/NicheMapper.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/BiophysicalEcology/NicheMapper.jl/actions/workflows/CI.yml)
+
 A Julia ecosystem for mechanistic niche modelling of plants, animals, and microbes —
 the Julia successor to [NicheMapR](https://github.com/mrke/NicheMapR).
 
