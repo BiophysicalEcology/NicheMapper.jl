@@ -20,7 +20,7 @@ shows how they build on each other.
 | Package | What it provides | Docs |
 |---|---|---|
 | HeatExchange.jl | Heat and water budgets of organisms (radiation, convection, evaporation, conduction); body and leaf temperature | [repo](https://github.com/BiophysicalEcology/HeatExchange.jl) |
-| BiophysicalGeometry.jl | Body shapes and insulation (fur, feathers, fat) | [repo](https://github.com/BiophysicalEcology/BiophysicalGeometry.jl) |
+| BiophysicalGeometry.jl | Body shapes and insulation (fur, feathers, fat) | [docs](https://biophysicalecology.github.io/BiophysicalGeometry.jl/previews/PR20/) |
 | BiophysicalBehaviour.jl | Thermoregulation of ectotherms, endotherms and heterotherms; activity; optimal control | [repo](https://github.com/BiophysicalEcology/BiophysicalBehaviour.jl) |
 | ThermalPhysiology.jl | Thermal performance curves, temperature corrections, thermal death time and tolerance landscapes | [docs](https://biophysicalecology.github.io/ThermalPhysiology.jl/dev/) |
 
