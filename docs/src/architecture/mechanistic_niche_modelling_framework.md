@@ -92,6 +92,7 @@ graph TD
   BiologicalScaling["BiologicalScaling"]:::pkg
   BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
   BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  DEBtool_J["DEBtool_J"]:::pkg
   FluidProperties["FluidProperties"]:::pkg
   HeatExchange["HeatExchange"]:::pkg
   Microclimate["Microclimate"]:::pkg
@@ -101,6 +102,7 @@ graph TD
   HeatExchange --> BiophysicalBehaviour
   BiologicalScaling -.-> HeatExchange
   BiophysicalGeometry --> HeatExchange
+  DEBtool_J -.-> HeatExchange
   FluidProperties --> HeatExchange
   HeatExchange --> Microclimate
   HeatExchange --> PlantMapper
@@ -108,9 +110,10 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,1,5,6 stroke:#e0553f,stroke-width:2px
+  linkStyle 0,1,6,7 stroke:#e0553f,stroke-width:2px
   linkStyle 2 stroke:#3a9a6a,stroke-width:2px
-  linkStyle 3,4 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 3,5 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 4 stroke:#e0b020,stroke-width:2px
 ```
 
 ### BiophysicalBehaviour.jl
@@ -135,6 +138,58 @@ graph TD
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
   linkStyle 0,1,3,4 stroke:#d0d0d0,stroke-width:2px
   linkStyle 2 stroke:#e0553f,stroke-width:2px
+```
+
+### BiologicalScaling.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  AnimalMapper["AnimalMapper"]:::mapper
+  BiologicalScaling["BiologicalScaling"]:::pkg
+  BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  PlantMapper["PlantMapper"]:::mapper
+
+  BiologicalScaling --> AnimalMapper
+  BiophysicalGeometry -.-> BiologicalScaling
+  BiologicalScaling -.-> HeatExchange
+  BiologicalScaling --> MicrobeMapper
+  BiologicalScaling --> PlantMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,2,3,4 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1 stroke:#d0d0d0,stroke-width:2px
+```
+
+### DEBtool_J.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  AnimalMapper["AnimalMapper"]:::mapper
+  DEBtool_J["DEBtool_J"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+  MicrobeMapper["MicrobeMapper"]:::mapper
+  PlantMapper["PlantMapper"]:::mapper
+  ThermalPhysiology["ThermalPhysiology"]:::pkg
+
+  DEBtool_J --> AnimalMapper
+  ThermalPhysiology -.-> DEBtool_J
+  DEBtool_J -.-> HeatExchange
+  DEBtool_J --> MicrobeMapper
+  DEBtool_J --> PlantMapper
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,2,3,4 stroke:#e0b020,stroke-width:2px
+  linkStyle 1 stroke:#b060c0,stroke-width:2px
 ```
 
 ### MicroclimateMapper.jl
@@ -304,11 +359,14 @@ graph TD
   HeatExchange --> AnimalMapper
   MicroclimateMapper --> AnimalMapper
   ThermalPhysiology --> AnimalMapper
+  BiophysicalGeometry -.-> BiologicalScaling
   BiophysicalGeometry --> BiophysicalBehaviour
   FluidProperties --> BiophysicalBehaviour
   HeatExchange --> BiophysicalBehaviour
+  ThermalPhysiology -.-> DEBtool_J
   BiologicalScaling -.-> HeatExchange
   BiophysicalGeometry --> HeatExchange
+  DEBtool_J -.-> HeatExchange
   FluidProperties --> HeatExchange
   BiologicalScaling --> MicrobeMapper
   DEBtool_J --> MicrobeMapper
@@ -334,13 +392,13 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,9,12,27 stroke:#3a9a6a,stroke-width:2px
-  linkStyle 1,21,23,24,26 stroke:#2f7fe0,stroke-width:2px
-  linkStyle 2,13,28 stroke:#e0b020,stroke-width:2px
-  linkStyle 3,8,18,29 stroke:#e0553f,stroke-width:2px
-  linkStyle 4,14,25,30 stroke:#1aa0d0,stroke-width:2px
-  linkStyle 5,15,31 stroke:#b060c0,stroke-width:2px
-  linkStyle 6,7,10,11,16,17,19,20,22 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 0,11,15,30 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1,24,26,27,29 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2,13,16,31 stroke:#e0b020,stroke-width:2px
+  linkStyle 3,9,21,32 stroke:#e0553f,stroke-width:2px
+  linkStyle 4,17,28,33 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 5,10,18,34 stroke:#b060c0,stroke-width:2px
+  linkStyle 6,7,8,12,14,19,20,22,23,25 stroke:#d0d0d0,stroke-width:2px
 ```
 <!-- ecosystem-graph-end -->
 

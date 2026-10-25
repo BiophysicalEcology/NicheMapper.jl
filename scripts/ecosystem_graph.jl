@@ -47,7 +47,10 @@ const EXTERNAL = ("Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl")
 const FUTURE_DEPS = (
     NicheMapper  = ["MicroclimateMapper.jl", "AnimalMapper.jl",
                     "PlantMapper.jl", "MicrobeMapper.jl"],
-    HeatExchange = ["BiologicalScaling.jl"],  # metabolic rate and surface areas
+    HeatExchange      = ["BiologicalScaling.jl",     # metabolic rate and surface areas
+                         "DEBtool_J.jl"],            # metabolic rate
+    BiologicalScaling = ["BiophysicalGeometry.jl"],  # body parts as geometric shapes
+    DEBtool_J         = ["ThermalPhysiology.jl"],    # Arrhenius temperature correction
 )
 
 is_future(dep, pkg) = hasproperty(FUTURE_DEPS, pkg_to_sym(pkg)) && dep ∈ getfield(FUTURE_DEPS, pkg_to_sym(pkg))
@@ -118,6 +121,8 @@ const FOCUS = (
     (focus = "Microclimate.jl",       dependents = false, among = true),
     (focus = "HeatExchange.jl",       dependents = true,  among = false),
     (focus = "BiophysicalBehaviour.jl", dependents = false, among = true),
+    (focus = "BiologicalScaling.jl",  dependents = true,  among = false),
+    (focus = "DEBtool_J.jl",          dependents = true,  among = false),
     (focus = "MicroclimateMapper.jl", dependents = false, among = false),
     (focus = "AnimalMapper.jl",       dependents = false, among = false),
     (focus = "PlantMapper.jl",        dependents = false, among = false),
