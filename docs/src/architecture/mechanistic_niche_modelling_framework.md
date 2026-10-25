@@ -54,6 +54,8 @@ The overall ecosystem of packages is designed to separate concerns in terms of d
 ## Dependencies
 
 <!-- ecosystem-graph-start -->
+Arrows point from a package to the packages that use it. Dashed arrows are planned dependencies; dashed blue boxes are the Mapper packages; green boxes are packages outside the ecosystem.
+
 ### Microclimate.jl
 
 ```mermaid
@@ -87,6 +89,7 @@ graph TD
 graph TD
 
   AnimalMapper["AnimalMapper"]:::mapper
+  BiologicalScaling["BiologicalScaling"]:::pkg
   BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
   BiophysicalGeometry["BiophysicalGeometry"]:::pkg
   FluidProperties["FluidProperties"]:::pkg
@@ -96,6 +99,7 @@ graph TD
 
   HeatExchange --> AnimalMapper
   HeatExchange --> BiophysicalBehaviour
+  BiologicalScaling -.-> HeatExchange
   BiophysicalGeometry --> HeatExchange
   FluidProperties --> HeatExchange
   HeatExchange --> Microclimate
@@ -104,8 +108,9 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,1,4,5 stroke:#e0553f,stroke-width:2px
-  linkStyle 2,3 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 0,1,5,6 stroke:#e0553f,stroke-width:2px
+  linkStyle 2 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 3,4 stroke:#d0d0d0,stroke-width:2px
 ```
 
 ### BiophysicalBehaviour.jl
@@ -259,10 +264,10 @@ graph TD
   NicheMapper["NicheMapper"]:::pkg
   PlantMapper["PlantMapper"]:::mapper
 
-  AnimalMapper --> NicheMapper
-  MicrobeMapper --> NicheMapper
-  MicroclimateMapper --> NicheMapper
-  PlantMapper --> NicheMapper
+  AnimalMapper -.-> NicheMapper
+  MicrobeMapper -.-> NicheMapper
+  MicroclimateMapper -.-> NicheMapper
+  PlantMapper -.-> NicheMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
@@ -302,6 +307,7 @@ graph TD
   BiophysicalGeometry --> BiophysicalBehaviour
   FluidProperties --> BiophysicalBehaviour
   HeatExchange --> BiophysicalBehaviour
+  BiologicalScaling -.-> HeatExchange
   BiophysicalGeometry --> HeatExchange
   FluidProperties --> HeatExchange
   BiologicalScaling --> MicrobeMapper
@@ -315,10 +321,10 @@ graph TD
   FluidProperties --> MicroclimateMapper
   Microclimate --> MicroclimateMapper
   SolarRadiation --> MicroclimateMapper
-  AnimalMapper --> NicheMapper
-  MicrobeMapper --> NicheMapper
-  MicroclimateMapper --> NicheMapper
-  PlantMapper --> NicheMapper
+  AnimalMapper -.-> NicheMapper
+  MicrobeMapper -.-> NicheMapper
+  MicroclimateMapper -.-> NicheMapper
+  PlantMapper -.-> NicheMapper
   BiologicalScaling --> PlantMapper
   DEBtool_J --> PlantMapper
   HeatExchange --> PlantMapper
@@ -328,13 +334,13 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,11,26 stroke:#3a9a6a,stroke-width:2px
-  linkStyle 1,20,22,23,25 stroke:#2f7fe0,stroke-width:2px
-  linkStyle 2,12,27 stroke:#e0b020,stroke-width:2px
-  linkStyle 3,8,17,28 stroke:#e0553f,stroke-width:2px
-  linkStyle 4,13,24,29 stroke:#1aa0d0,stroke-width:2px
-  linkStyle 5,14,30 stroke:#b060c0,stroke-width:2px
-  linkStyle 6,7,9,10,15,16,18,19,21 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 0,9,12,27 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1,21,23,24,26 stroke:#2f7fe0,stroke-width:2px
+  linkStyle 2,13,28 stroke:#e0b020,stroke-width:2px
+  linkStyle 3,8,18,29 stroke:#e0553f,stroke-width:2px
+  linkStyle 4,14,25,30 stroke:#1aa0d0,stroke-width:2px
+  linkStyle 5,15,31 stroke:#b060c0,stroke-width:2px
+  linkStyle 6,7,10,11,16,17,19,20,22 stroke:#d0d0d0,stroke-width:2px
 ```
 <!-- ecosystem-graph-end -->
 

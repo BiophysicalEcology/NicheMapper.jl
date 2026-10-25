@@ -40,14 +40,17 @@ const PLANNED = (
                           "BiologicalScaling.jl", "DEBtool_J.jl"],
 )
 
-# Planned future deps for existing packages not yet reflected in their Project.toml.
 # Packages outside the ecosystem, drawn only in subsets that list them.
 const EXTERNAL = ("Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl")
 
+# Planned future deps for existing packages not yet reflected in their Project.toml; drawn dashed.
 const FUTURE_DEPS = (
-    NicheMapper = ["MicroclimateMapper.jl", "AnimalMapper.jl",
-                   "PlantMapper.jl", "MicrobeMapper.jl"],
+    NicheMapper  = ["MicroclimateMapper.jl", "AnimalMapper.jl",
+                    "PlantMapper.jl", "MicrobeMapper.jl"],
+    HeatExchange = ["BiologicalScaling.jl"],  # metabolic rate and surface areas
 )
+
+is_future(dep, pkg) = hasproperty(FUTURE_DEPS, pkg_to_sym(pkg)) && dep ∈ getfield(FUTURE_DEPS, pkg_to_sym(pkg))
 
 pkg_to_sym(pkg) = Symbol(replace(pkg, ".jl" => ""))
 sym_to_pkg(sym) = string(sym) * ".jl"
@@ -123,7 +126,10 @@ const FOCUS = (
     (focus = nothing,                 dependents = false, among = false),
 )
 
-graph_blocks(graph) = join(map(FOCUS) do f
+const GRAPH_KEY = "Arrows point from a package to the packages that use it. Dashed arrows are planned " *
+    "dependencies; dashed blue boxes are the Mapper packages; green boxes are packages outside the ecosystem."
+
+graph_blocks(graph) = GRAPH_KEY * "\n\n" * join(map(FOCUS) do f
     title = isnothing(f.focus) ? "All packages" : f.focus
     "### $title\n\n" * mermaid_block(graph, f.focus, f.dependents, f.among)
 end, "\n\n")
@@ -156,7 +162,7 @@ function mermaid_block(graph, focus = nothing, dependents = false, among = false
         pkg ∈ nodes || continue
         for dep in sort(deps; by = d -> (d ∈ EXTERNAL, d))
             (dep ∈ nodes && shown(dep, pkg)) || continue
-            println(io, "  $(node_id(dep)) --> $(node_id(pkg))")
+            println(io, "  $(node_id(dep)) $(is_future(dep, pkg) ? "-.->" : "-->") $(node_id(pkg))")
             push!(colours, get(EDGE_COLOURS, dep, DEFAULT_EDGE_COLOUR))
         end
     end
