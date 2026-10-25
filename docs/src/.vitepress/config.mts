@@ -18,6 +18,12 @@ const navTemp = {
   nav: [
     { text: 'Home', link: '/' },
     { text: 'The packages', link: '/packages' },
+    { text: 'Architecture',
+      items: [
+        { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
+        { text: 'Extending with multiple dispatch', link: '/architecture/extending_with_dispatch' },
+      ]
+    },
     { text: 'NicheMapR',
       items: [
         { text: 'For NicheMapR users', link: '/nichemapr' },
@@ -28,12 +34,6 @@ const navTemp = {
       items: [
         { text: 'People', link: '/people' },
         { text: 'Related projects', link: '/related' },
-      ]
-    },
-    { text: 'Architecture',
-      items: [
-        { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
-        { text: 'Extending with multiple dispatch', link: '/architecture/extending_with_dispatch' },
       ]
     },
   ],
@@ -109,6 +109,12 @@ export default withMermaid(defineConfig({
     nav,
     sidebar: [
       { text: 'The packages', link: '/packages' },
+      { text: 'Architecture',
+        items: [
+          { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
+          { text: 'Extending with multiple dispatch', link: '/architecture/extending_with_dispatch' },
+        ]
+      },
       { text: 'NicheMapR',
         items: [
           { text: 'For NicheMapR users', link: '/nichemapr' },
@@ -119,12 +125,6 @@ export default withMermaid(defineConfig({
         items: [
           { text: 'People', link: '/people' },
           { text: 'Related projects', link: '/related' },
-        ]
-      },
-      { text: 'Architecture',
-        items: [
-          { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
-          { text: 'Extending with multiple dispatch', link: '/architecture/extending_with_dispatch' },
         ]
       },
     ],
