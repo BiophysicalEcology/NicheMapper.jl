@@ -66,6 +66,8 @@ graph TD
   Microclimate["Microclimate"]:::pkg
   SolarRadiation["SolarRadiation"]:::pkg
 
+  BiophysicalGeometry --> HeatExchange
+  FluidProperties --> HeatExchange
   BiophysicalGeometry --> Microclimate
   FluidProperties --> Microclimate
   HeatExchange --> Microclimate
@@ -74,8 +76,8 @@ graph TD
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,1,3 stroke:#d0d0d0,stroke-width:2px
-  linkStyle 2 stroke:#e0553f,stroke-width:2px
+  linkStyle 0,1,2,3,5 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 4 stroke:#e0553f,stroke-width:2px
 ```
 
 ### HeatExchange.jl
@@ -104,6 +106,30 @@ graph TD
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
   linkStyle 0,1,4,5 stroke:#e0553f,stroke-width:2px
   linkStyle 2,3 stroke:#d0d0d0,stroke-width:2px
+```
+
+### BiophysicalBehaviour.jl
+
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph TD
+
+  BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
+  BiophysicalGeometry["BiophysicalGeometry"]:::pkg
+  FluidProperties["FluidProperties"]:::pkg
+  HeatExchange["HeatExchange"]:::pkg
+
+  BiophysicalGeometry --> BiophysicalBehaviour
+  FluidProperties --> BiophysicalBehaviour
+  HeatExchange --> BiophysicalBehaviour
+  BiophysicalGeometry --> HeatExchange
+  FluidProperties --> HeatExchange
+
+  classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
+  classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
+  classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
+  linkStyle 0,1,3,4 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 2 stroke:#e0553f,stroke-width:2px
 ```
 
 ### MicroclimateMapper.jl

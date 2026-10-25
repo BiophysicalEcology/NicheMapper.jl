@@ -108,25 +108,27 @@ const DEFAULT_EDGE_COLOUR = "#d0d0d0"
 
 is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
 
-# One graph per focus package: what it depends on, and with `dependents` what depends on it.
+# One graph per focus package: what it depends on, with `dependents` also what depends on it,
+# and with `among` the dependencies between the packages shown.
 # `nothing` draws every package.
 const FOCUS = (
-    (focus = "Microclimate.jl",       dependents = false),
-    (focus = "HeatExchange.jl",       dependents = true),
-    (focus = "MicroclimateMapper.jl", dependents = false),
-    (focus = "AnimalMapper.jl",       dependents = false),
-    (focus = "PlantMapper.jl",        dependents = false),
-    (focus = "MicrobeMapper.jl",      dependents = false),
-    (focus = "NicheMapper.jl",        dependents = false),
-    (focus = nothing,                 dependents = false),
+    (focus = "Microclimate.jl",       dependents = false, among = true),
+    (focus = "HeatExchange.jl",       dependents = true,  among = false),
+    (focus = "BiophysicalBehaviour.jl", dependents = false, among = true),
+    (focus = "MicroclimateMapper.jl", dependents = false, among = false),
+    (focus = "AnimalMapper.jl",       dependents = false, among = false),
+    (focus = "PlantMapper.jl",        dependents = false, among = false),
+    (focus = "MicrobeMapper.jl",      dependents = false, among = false),
+    (focus = "NicheMapper.jl",        dependents = false, among = false),
+    (focus = nothing,                 dependents = false, among = false),
 )
 
 graph_blocks(graph) = join(map(FOCUS) do f
     title = isnothing(f.focus) ? "All packages" : f.focus
-    "### $title\n\n" * mermaid_block(graph, f.focus, f.dependents)
+    "### $title\n\n" * mermaid_block(graph, f.focus, f.dependents, f.among)
 end, "\n\n")
 
-function mermaid_block(graph, focus = nothing, dependents = false)
+function mermaid_block(graph, focus = nothing, dependents = false, among = false)
     all_nodes = Set(EXISTING) ∪ Set(sym_to_pkg.(propertynames(PLANNED)))
     nodes = if isnothing(focus)
         all_nodes
@@ -134,7 +136,7 @@ function mermaid_block(graph, focus = nothing, dependents = false)
         users = dependents ? [pkg for (pkg, deps) in graph if focus ∈ deps] : String[]
         Set([focus; graph[focus]; users]) ∩ (all_nodes ∪ Set(EXTERNAL))
     end
-    shown(dep, pkg) = isnothing(focus) || pkg == focus || dep == focus
+    shown(dep, pkg) = among || isnothing(focus) || pkg == focus || dep == focus
 
     io = IOBuffer()
     println(io, "```mermaid")
