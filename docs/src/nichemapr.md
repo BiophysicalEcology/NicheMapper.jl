@@ -14,3 +14,5 @@ separate packages, so each part can be used, tested and replaced on its own.
 | `DEB` options of `ectotherm` | DEBtool_J.jl |
 | `ectotherm` as a whole | AnimalMapper.jl (planned) |
 | `plantgro` | PlantMapper.jl (planned) |
+
+See [History](background.md) for how the models developed from the 1970s to NicheMapR.

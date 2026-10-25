@@ -228,3 +228,20 @@ html.dark .DocSearch {
 .highlight-link {
   color: var(--vp-c-brand-3);
 }
+/* Home banner: desert panorama behind the hero */
+.VPHome .VPHero {
+  background:
+    linear-gradient(rgba(10, 12, 18, 0.62), rgba(10, 12, 18, 0.35)),
+    url("../../assets/near_papunya.jpg") center / cover no-repeat;
+  padding-bottom: 64px;
+}
+.VPHome .VPHero .text,
+.VPHome .VPHero .tagline {
+  color: #f4f1ea;
+}
+.VPNavBar.home.top {
+  background-color: var(--vp-nav-bg-color);
+}
+.VPHome .VPHero {
+  --vp-home-hero-name-background: linear-gradient(110deg, #f6d36b 20%, #9ad7a0);
+}

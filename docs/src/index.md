@@ -6,7 +6,10 @@ layout: home
 hero:
   name: "NicheMapper.jl"
   text: "Mechanistic niche modelling"
-  tagline: "where and when organisms can persist, from the conservation of energy and mass. The Julia successor to NicheMapR."
+  tagline: "Can an organism complete its life cycle in a particular place and time, without overheating, desiccating or starving? The Julia successor to NicheMapR."
+  image:
+    src: /ThermoNiche.jpg
+    alt: A lizard in thermal and water-balance colours against a desert landscape (Elia Pirtle)
   actions:
     - theme: brand
       text: The packages
@@ -42,6 +45,20 @@ features:
     link: /architecture/extending_with_dispatch
 ---
 ```
+
+## What it does
+
+Starting from the [functional traits](https://doi.org/10.1111/1365-2435.13829) of an organism,
+the packages compute the sequence of environments it experiences in a habitat, and whether that
+sequence lies inside or outside its niche. This integrates:
+
+- the external exchange of heat and water, from **biophysical ecology**;
+- the internal processes of growth, development and reproduction, from **metabolic theory**
+  (Dynamic Energy Budget theory);
+- the **microclimates** the organism is exposed to, from micrometeorology, soil physics and hydrology.
+
+See [History](background.md) for how this grew from a question about why
+desert iguanas change colour.
 
 ## How to install NicheMapper.jl?
 

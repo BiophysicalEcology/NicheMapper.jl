@@ -18,7 +18,18 @@ const navTemp = {
   nav: [
     { text: 'Home', link: '/' },
     { text: 'The packages', link: '/packages' },
-    { text: 'For NicheMapR users', link: '/nichemapr' },
+    { text: 'NicheMapR',
+      items: [
+        { text: 'For NicheMapR users', link: '/nichemapr' },
+        { text: 'History', link: '/background' },
+      ]
+    },
+    { text: 'About',
+      items: [
+        { text: 'People', link: '/people' },
+        { text: 'Related projects', link: '/related' },
+      ]
+    },
     { text: 'Architecture',
       items: [
         { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
@@ -98,7 +109,18 @@ export default withMermaid(defineConfig({
     nav,
     sidebar: [
       { text: 'The packages', link: '/packages' },
-      { text: 'For NicheMapR users', link: '/nichemapr' },
+      { text: 'NicheMapR',
+        items: [
+          { text: 'For NicheMapR users', link: '/nichemapr' },
+          { text: 'History', link: '/background' },
+        ]
+      },
+      { text: 'About',
+        items: [
+          { text: 'People', link: '/people' },
+          { text: 'Related projects', link: '/related' },
+        ]
+      },
       { text: 'Architecture',
         items: [
           { text: 'Overview', link: '/architecture/mechanistic_niche_modelling_framework' },
