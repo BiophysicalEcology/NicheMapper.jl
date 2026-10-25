@@ -310,9 +310,9 @@ graph TD
   NicheMapper["NicheMapper"]:::pkg
   PlantMapper["PlantMapper"]:::mapper
 
+  MicroclimateMapper -.-> NicheMapper
   AnimalMapper -.-> NicheMapper
   MicrobeMapper -.-> NicheMapper
-  MicroclimateMapper -.-> NicheMapper
   PlantMapper -.-> NicheMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
