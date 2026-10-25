@@ -47,8 +47,7 @@ const EXTERNAL = ("Rasters.jl", "RasterDataSources.jl", "Geomorphometry.jl")
 const FUTURE_DEPS = (
     NicheMapper  = ["MicroclimateMapper.jl", "AnimalMapper.jl",
                     "PlantMapper.jl", "MicrobeMapper.jl"],
-    HeatExchange      = ["BiologicalScaling.jl",     # metabolic rate and surface areas
-                         "DEBtool_J.jl"],            # metabolic rate
+    HeatExchange      = ["DEBtool_J.jl"],            # metabolic rate
     BiologicalScaling = ["BiophysicalGeometry.jl"],  # body parts as geometric shapes
     DEBtool_J         = ["ThermalPhysiology.jl"],    # Arrhenius temperature correction
 )
@@ -85,8 +84,9 @@ function build_graph()
     for k in propertynames(PLANNED)
         graph[sym_to_pkg(k)] = getfield(PLANNED, k)
     end
-    for k in propertynames(FUTURE_DEPS)
-        append!(graph[sym_to_pkg(k)], getfield(FUTURE_DEPS, k))
+    for k in propertynames(FUTURE_DEPS), dep in getfield(FUTURE_DEPS, k)
+        deps = graph[sym_to_pkg(k)]
+        dep ∈ deps ? @warn("$dep is now a dependency of $k: remove it from FUTURE_DEPS") : push!(deps, dep)
     end
     return graph
 end
@@ -119,7 +119,7 @@ is_mapper(pkg) = endswith(strip_jl(pkg), "Mapper") && pkg != "NicheMapper.jl"
 # `nothing` draws every package.
 const FOCUS = (
     (focus = "Microclimate.jl",       dependents = false, among = true),
-    (focus = "HeatExchange.jl",       dependents = true,  among = false),
+    (focus = "HeatExchange.jl",       dependents = false, among = false),
     (focus = "BiophysicalBehaviour.jl", dependents = false, among = true),
     (focus = "BiologicalScaling.jl",  dependents = true,  among = false),
     (focus = "DEBtool_J.jl",          dependents = true,  among = false),

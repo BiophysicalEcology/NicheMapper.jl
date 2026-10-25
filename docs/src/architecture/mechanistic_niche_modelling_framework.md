@@ -88,32 +88,23 @@ graph TD
 %%{init: {"theme": "dark"}}%%
 graph TD
 
-  AnimalMapper["AnimalMapper"]:::mapper
   BiologicalScaling["BiologicalScaling"]:::pkg
-  BiophysicalBehaviour["BiophysicalBehaviour"]:::pkg
   BiophysicalGeometry["BiophysicalGeometry"]:::pkg
   DEBtool_J["DEBtool_J"]:::pkg
   FluidProperties["FluidProperties"]:::pkg
   HeatExchange["HeatExchange"]:::pkg
-  Microclimate["Microclimate"]:::pkg
-  PlantMapper["PlantMapper"]:::mapper
 
-  HeatExchange --> AnimalMapper
-  HeatExchange --> BiophysicalBehaviour
-  BiologicalScaling -.-> HeatExchange
+  BiologicalScaling --> HeatExchange
   BiophysicalGeometry --> HeatExchange
   DEBtool_J -.-> HeatExchange
   FluidProperties --> HeatExchange
-  HeatExchange --> Microclimate
-  HeatExchange --> PlantMapper
 
   classDef pkg fill:#22223a,stroke:#9a9aaa,stroke-width:2px,color:#fff
   classDef mapper fill:#2f6fd6,stroke:#8fbfff,stroke-width:3px,stroke-dasharray:6 4,color:#fff
   classDef external fill:#1c2a24,stroke:#6a9a80,stroke-width:2px,color:#cfe
-  linkStyle 0,1,6,7 stroke:#e0553f,stroke-width:2px
-  linkStyle 2 stroke:#3a9a6a,stroke-width:2px
-  linkStyle 3,5 stroke:#d0d0d0,stroke-width:2px
-  linkStyle 4 stroke:#e0b020,stroke-width:2px
+  linkStyle 0 stroke:#3a9a6a,stroke-width:2px
+  linkStyle 1,3 stroke:#d0d0d0,stroke-width:2px
+  linkStyle 2 stroke:#e0b020,stroke-width:2px
 ```
 
 ### BiophysicalBehaviour.jl
@@ -155,7 +146,7 @@ graph TD
 
   BiologicalScaling --> AnimalMapper
   BiophysicalGeometry -.-> BiologicalScaling
-  BiologicalScaling -.-> HeatExchange
+  BiologicalScaling --> HeatExchange
   BiologicalScaling --> MicrobeMapper
   BiologicalScaling --> PlantMapper
 
@@ -364,7 +355,7 @@ graph TD
   FluidProperties --> BiophysicalBehaviour
   HeatExchange --> BiophysicalBehaviour
   ThermalPhysiology -.-> DEBtool_J
-  BiologicalScaling -.-> HeatExchange
+  BiologicalScaling --> HeatExchange
   BiophysicalGeometry --> HeatExchange
   DEBtool_J -.-> HeatExchange
   FluidProperties --> HeatExchange
