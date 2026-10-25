@@ -12,16 +12,16 @@ shows how they build on each other.
 |---|---|---|
 | Microclimate.jl | Soil, surface, snow and canopy energy and water balance; hourly microclimate profiles for one site | [docs](https://biophysicalecology.github.io/Microclimate.jl/dev/) |
 | MicroclimateMapper.jl | Microclimate.jl over points and grids, from weather, terrain, soil and land cover data sets | [docs](https://biophysicalecology.github.io/MicroclimateMapper.jl/dev/) |
-| SolarRadiation.jl | Solar geometry and spectral direct, diffuse and global irradiance | [repo](https://github.com/BiophysicalEcology/SolarRadiation.jl) |
+| SolarRadiation.jl | Solar geometry and spectral direct, diffuse and global irradiance | [docs](https://biophysicalecology.github.io/SolarRadiation.jl/previews/PR21/) |
 | FluidProperties.jl | Properties of air, water vapour and liquid water | [docs](https://biophysicalecology.github.io/FluidProperties.jl/dev/) |
 
 ## Organisms
 
 | Package | What it provides | Docs |
 |---|---|---|
-| HeatExchange.jl | Heat and water budgets of organisms (radiation, convection, evaporation, conduction); body and leaf temperature | [repo](https://github.com/BiophysicalEcology/HeatExchange.jl) |
+| HeatExchange.jl | Heat and water budgets of organisms (radiation, convection, evaporation, conduction); body and leaf temperature | [docs](https://biophysicalecology.github.io/HeatExchange.jl/previews/PR57/) |
 | BiophysicalGeometry.jl | Body shapes and insulation (fur, feathers, fat) | [docs](https://biophysicalecology.github.io/BiophysicalGeometry.jl/previews/PR20/) |
-| BiophysicalBehaviour.jl | Thermoregulation of ectotherms, endotherms and heterotherms; activity; optimal control | [repo](https://github.com/BiophysicalEcology/BiophysicalBehaviour.jl) |
+| BiophysicalBehaviour.jl | Thermoregulation of ectotherms, endotherms and heterotherms; activity; optimal control | [docs](https://biophysicalecology.github.io/BiophysicalBehaviour.jl/previews/PR28/) |
 | ThermalPhysiology.jl | Thermal performance curves, temperature corrections, thermal death time and tolerance landscapes | [docs](https://biophysicalecology.github.io/ThermalPhysiology.jl/dev/) |
 
 ## Metabolism
